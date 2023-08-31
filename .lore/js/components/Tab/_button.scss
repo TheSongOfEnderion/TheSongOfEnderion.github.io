@@ -1,0 +1,65 @@
+@use '../../../css/vars' as *;
+
+.button {
+  // Block
+  padding: 3px 5px 3px 5px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 5px;
+
+  // Element
+  background-color: transparent;
+  color: $black;
+  font-weight: bold;
+
+  // Misc
+  transition: 0.3s linear;
+  cursor: pointer;
+  
+  // Hover
+  &:hover {
+    background-color: $blue;
+    color: white;
+  }
+}
+
+.button--active {
+  // Element
+  color: $blue;
+}
+
+.button--autolink {
+  background-color: transparent;
+  color: $blue;
+  font-weight:400;
+  // font-family: Rubik Light !important;
+}
+
+.button--error {
+  color: $red;
+  font-weight:400;
+  &:hover {
+    background-color: $red;
+    color: white;
+  }
+}
+
+.button--toc {
+  // Block
+  padding: 1px 3px 1px 3px;
+  width: fit-content;
+  margin: 0px;
+  line-height: 16px;
+  border-radius: 3px;
+
+  // Element
+  color: $blue;
+  text-decoration: none;
+  font-weight: normal;
+
+  // Hover
+  &:hover {
+    // background-color: transparent;
+    // color: $blue;
+  }
+}

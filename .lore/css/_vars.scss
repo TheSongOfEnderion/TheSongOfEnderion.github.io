@@ -1,0 +1,22 @@
+// Pallete
+$dark: #252525;
+$black: #191919;
+$blue: #4584FF;
+$red: #F44336;
+$grey: #F5F5F5;
+
+// Colors
+$bg-color: $black;
+$font-color1: white;
+$font-color2: $black;
+
+
+// Global Values
+$gb-padding: 30px;
+$gb-border-radius: 20px;
+
+
+// Mixins
+@mixin shadow {
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}

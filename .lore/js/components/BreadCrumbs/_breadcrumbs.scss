@@ -1,0 +1,13 @@
+@use '../../../css/vars' as *;
+
+.breadcrumbs {
+  // Block
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  
+  // Element
+  background-color: $grey;
+  font-size: 13px;
+  
+}

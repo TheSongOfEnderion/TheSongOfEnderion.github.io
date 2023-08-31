@@ -1,0 +1,20 @@
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+        {
+            "match": "\\.js",
+            "isAsync": true,
+            "cmd": "node ./.lore/js/scripts/compile.js"
+        },
+        {
+          "match": "\\.scss",
+          "isAsync": true,
+          "cmd": "node ./.lore/js/scripts/compile.js"
+      },
+    ]
+  },
+  "liveServer.settings.fullReload": true,
+  "liveServer.settings.ignoreFiles": [
+      ".vscode/**",
+  ],
+}

@@ -1,0 +1,30 @@
+{
+  "title": "The Song of Enderion",
+  "directory": {
+    "ethan-morales": {
+      "title": "Ethan Morales",
+      "path": "content/ethan-morales.md",
+      "parent": "tboah-characters"
+    },
+    "home": {
+      "title": "Home",
+      "path": "content/home.md",
+      "parent": "geh"
+    },
+    "404": {
+      "title": "404",
+      "path": "assets/404.md",
+      "parent": "geh"
+    },
+    "librarium": {
+      "title": "Librarium Sanctum",
+      "path": "content/librarium.md",
+      "parent": ""
+    },
+    "tboah": {
+      "title": "Librarium Sanctum",
+      "path": "content/librarium.md",
+      "parent": ""
+    }
+  }
+}

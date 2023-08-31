@@ -1,0 +1,35 @@
+@import "reset";
+@import "../font/font";
+@import 'utility';
+@import "imports";
+@import "vars";
+
+* {
+  font-family: Rubik;
+}
+
+body {
+  background-color: $black;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+}
+
+.full {
+  height: 100vh;
+  width: 100%;
+}
+
+.hide {
+  display: none;
+}
+
+.error {
+  color: $red;
+  font-family: monospace;
+}
+

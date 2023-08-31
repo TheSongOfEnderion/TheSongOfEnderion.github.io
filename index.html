@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <title>HTML 5 Boilerplate</title>
+
+  <link rel="stylesheet" href="./.lore/css/style.css">
+
+
+</head>
+
+<body onload="start()">
+
+  <div id="app">
+    <div class="container full">
+      <Card :title="pageName" :content="content" :directory="directory"/>
+
+    </div>
+  </div>
+
+
+  <script src=".lore/js/import/vue.global.js"></script>
+  <script src=".lore/js/import/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.js"></script>
+
+  <!-- <script src="https://unpkg.com/vue@3"></script>
+  <script src="./.lore/js/import/marked.min.js"></script> -->
+
+  <script rel="modulepreload" src=".lore/js/index.js"></script>
+</body>
+
+</html>

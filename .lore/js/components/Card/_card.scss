@@ -1,0 +1,88 @@
+@use '../../../css/vars' as *;
+
+.card-container {
+  height: 100%;
+  margin-top: 100px;
+  margin-bottom: 50px;
+}
+
+
+.card {
+  // Block
+  width: 60vw;
+  padding: $gb-padding; 
+  border-radius: $gb-border-radius; 
+    
+  // Element
+  background-color: white; 
+  color: #434343;
+  font-size: 13px;
+  font-family: Rubik Light; 
+  line-height: 20px;
+  
+  // Misc
+  overflow: auto;
+
+  // Children
+  blockquote {
+    font-style: italic;
+    border-left: 5px solid $blue;
+    padding-left: 30px;
+    margin-left: 10px;
+
+  }
+}  
+
+.card-content {
+  font-family: Rubik Light !important;
+}
+
+.toc {
+  // Block
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+  min-width: 150px;
+  width: fit-content;
+  padding: 10px;
+  border-radius: 5px;
+
+  // Element
+  background-color: $grey;
+
+  // Misc
+  .toc-title {
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    margin: 0px; 
+  }  
+
+  .H2 {
+    margin-left: 1em;
+  }
+  
+  .H3 {
+    margin-left: 2em;
+  } 
+  
+  .H4 {
+    margin-left: 3em;
+  }
+  
+  .H5 {
+    margin-left: 4em;
+  }
+  
+  .H6 {
+    margin-left: 5em;
+  }
+}
+
+
+
+#title {
+  // Element
+  color: white;
+  font-family: Rubik Light;
+}
