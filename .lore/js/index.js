@@ -1,5 +1,7 @@
 
 var root;
+var historyList = [];
+var globalPosition = null;
 
 function start() {
   const app = Vue.createApp({
@@ -21,29 +23,70 @@ function start() {
       this.directory = metadata.directory
       
       // Get query id
-      let pageId = (new URLSearchParams(window.location.search)).get('p');
+      let pageId = this.getCurrentPageId();
       if (pageId == null || pageId == "") pageId = "home"
       if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
 
-      const pageMeta = this.directory[pageId];
+      
 
-      this.reload(pageMeta.path, pageId, pageMeta.title)
+      this.reload(pageId)
 
+      // window.onpopstate = function(event) {
+      //   event.preventDefault();
+      //   console.log(event)
+      //   // historyList
+      // };
+      window.addEventListener('forward', event => {
+
+        if (globalPosition+1 < historyList.length) globalPosition++
+        this.reload(historyList[globalPosition], true)
+      });
+
+      window.addEventListener('back', event => {
+        if (globalPosition !== 0) globalPosition--
+        this.reload(historyList[globalPosition], true)
+      });
 
     },
     methods: {
-      async reload(path, id, name) {
-        const pageFile = await (await fetch(path)).text()
-
-        this.content = pageFile 
-        this.pageName = name
-
-        if (id == "404") {
-          const pageId = (new URLSearchParams(window.location.search)).get('p');
-          this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`
+      async reload(pageId, isPopState=false) {
+        // Prevents repeated history when same page button is clicked
+        if (isPopState == false && pageId == historyList[globalPosition]) return
+        // Deal with Global Positioning
+        if (globalPosition == null) globalPosition = 0
+        else if(!isPopState) globalPosition += 1
+        
+        // Clear history before the latest new page
+        if (isPopState == false && globalPosition >= 0 && globalPosition < historyList.length) {
+          // console.log("before: ", isPopState, historyList, globalPosition);
+          historyList.length = globalPosition
+          // console.log("after: ", isPopState, historyList, globalPosition);
         }
 
+        if (isPopState == false) historyList.push(pageId)
+        // console.log("gistory: ", historyList, globalPosition, pageId)
+         
+ 
+        // Get metadata file 
+        let isError = false
+        let pageMeta = this.directory[pageId];
+        if (!this.directory.hasOwnProperty(pageId)) {
+          pageMeta = this.directory["404"];
+          isError = true;
+        }
+
+        // Update Card Content
+        this.content = await (await fetch(pageMeta.path)).text() 
+        this.pageName = pageMeta.title
+
+        if (isError = true) {
+          this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`}
+        
+        // Update App
         this.$forceUpdate();
+      },
+      getCurrentPageId() {
+        return (new URLSearchParams(window.location.search)).get('p');
       }
     }
   })
@@ -78,10 +121,9 @@ const autoLinkExclude = [
   "toc"
 ]
 
-const autoLinkBtn = (name, id, path) => {
-  return path.includes("404") ?
-   `<button class="button button--error" onclick="changePage('${name}', '${id}', '${path}')">${name}</button>` :
-   `<button class="button button--autolink" onclick="changePage('${name}', '${id}', '${path}')">${name}</button>`
+const autoLinkBtn = (title, pageId, isError=false) => {
+  const btnClass = isError == true ? 'button--error' : 'button--autolink'
+  return `<button class="button ${btnClass}" onclick="changePage('${pageId}')">${title}</button>`
 }
 
 
@@ -90,89 +132,95 @@ function autoLink(value, directory) {
   const matches = [];
   let match;
   
+  // Creates matches object to iterate through
   while ((match = regex.exec(value)) !== null) {
+    // if unallowed box
     if (autoLinkExclude.includes(match[1])) continue;
+
+    // If using the format [[name | custom_name]]
     if (match[1].includes("|")) {
-      let [name_real, name_fale] = match[1].split("|")
-      matches.push([name_real.trim(), name_fale.trim(), match[1].trim()])
+      let [title, name_toshow] = match[1].split("|")
+      matches.push({
+          title: title.trim(),
+          pageId: title.trim().toLowerCase().replace(" ", "-"),
+          name_toshow: name_toshow.trim(),
+          original_string: match[1].trim(),
+          is_custom: true,
+        })
       continue
     }
-    matches.push([match[1].trim()]);
+    // If normal [[name]]
+    matches.push({
+      title: match[1].trim(),
+      pageId: match[1].trim().toLowerCase().replace(" ", "-"),
+      original_string: match[1].trim(),
+      is_custom: false,
+    });
   }
 
   // First check
-  for (let index = matches.length - 1; index >= 0; index--) { 
+  for (let index =  matches.length-1; index >= 0; index--) { 
     const item = matches[index]
-    const name_real = item[0]
-    let name_low;
 
-    if (item.length != 3) {
-      name_low = name_real.toLowerCase()
-    } else {
-      name_low = item[0].toLowerCase()
-    }
+    // Check if it does nnot exist
+    if (!directory.hasOwnProperty(item.pageId)) continue
 
-    if (directory.hasOwnProperty(name_low)) {
-      const title = directory[name_low].title
-      const path = directory[name_low].path
-      
-      
-      // Has a fake name
-      if (item.length == 3) {
-        value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], item[0], path))
-      } else {
-        value = value.replace(`[[${name_real}]]`, autoLinkBtn(title, name_real, path))
-      }
+    const title = directory[item.pageId].title
+    const path = directory[item.pageId].path
+    
+    value = value.replace(`[[${item.original_string}]]`, 
+                           autoLinkBtn(item.is_custom == true? item.name_toshow : title, 
+                                       item.pageId,
+                                       ))
 
-      matches.splice(index, 1);
-    }
+    // Remove finished entry from matches
+    matches.splice(index, 1)
+
   }
 
-  
-  // Second Check
-  for (const entry in directory) {
-    const title = directory[entry].title
-    const loweredTitle = title.toLowerCase()
-
-
-    for (let index = matches.length - 1; index >= 0; index--) { 
-      const item = matches[index]
-
-      if (loweredTitle == item[0].toLowerCase()) {
-        const path = directory[entry].path
-        
-        if (item.length == 3) {
-          console.log(item)
-          value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], entry, path))
-        } else {
-          value = value.replace(`[[${item[0]}]]`, autoLinkBtn(title, entry, path))
-        }
-        
-        matches.splice(index, 1);
-      }
-    }
-  }
-
-
+  // Add error buttons
   matches.map((item, index, array)=>{
-    item.length == 3 ? 
-    value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], item[0], "assets/404.md")) :
-    value = value.replace(`[[${item[0]}]]`, autoLinkBtn(item[0], item[0], "assets/404.md"))    
-  })
-  
+    value = value.replace(`[[${item.original_string}]]`, 
+      autoLinkBtn(item.is_custom == true? item.name_toshow : item.title, item.pageId, true))
+  }) 
+
   return value
 }
 
-function changePage(name, id, path) {
-  const url = new URL(window.location);
+
   
-  url.searchParams.set("p", id.replace(" ", "-").toLowerCase());
+  // Second Check
+  // for (const entry in directory) { 
+  //   const title = directory[entry].title
+  //   const pageId = title.toLowerCase()
+
+
+  //   for (const index=matches.length-1; index>=0; index--) { 
+  //     const item = matches[index]
+
+  //     if (pageId == item.pageId) {
+  //       const path = directory[entry].path
+        
+  //       if (item.length == 3) {
+  //         console.log(item)
+  //         value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], entry, path))
+  //       } else {
+  //         value = value.replace(`[[${item[0]}]]`, autoLinkBtn(title, entry, path))
+  //       }
+        
+  //       matches.splice(index, 1);
+  //     }
+  //   }
+  // }
+
+function changePage(pageId) {
+  
+  const url = new URL(window.location);  
+  url.searchParams.set("p", pageId);
   history.pushState({}, "", url);
 
-  console.log(name, path)
-
   // Reload vue page
-  root.reload(path, "404", name)
+  root.reload(pageId)
 }
 
 var globalIdList = []
@@ -195,6 +243,69 @@ function makeid(length) {
 
   return randomWord;
 }
+
+// Source; https://github.com/johanholmerin/popstate-direction
+
+// Keep track of current position
+let currentIndex = (history.state && history.state.index) || 0;
+
+// Set initial index, before replacing setters
+if (!history.state || !('index' in history.state)) {
+  history.replaceState(
+    { index: currentIndex, state: history.state },
+    document.title
+  );
+}
+
+// Native functions
+const getState = Object.getOwnPropertyDescriptor(History.prototype, 'state')
+  .get;
+const { pushState, replaceState } = history;
+
+// Detect forward and back changes
+function onPopstate() {
+  const state = getState.call(history);
+
+  // State is unset when `location.hash` is set. Update with incremented index
+  if (!state) {
+    replaceState.call(history, { index: currentIndex + 1 }, document.title);
+  }
+  const index = state ? state.index : currentIndex + 1;
+
+  const direction = index > currentIndex ? 'forward' : 'back';
+  window.dispatchEvent(new Event(direction));
+
+  currentIndex = index;
+}
+
+// Create functions which modify index
+function modifyStateFunction(func, n) {
+  return (state, ...args) => {
+    func.call(history, { index: currentIndex + n, state }, ...args);
+    // Only update currentIndex if call succeeded
+    currentIndex += n;
+  };
+}
+
+// Override getter to only return the real state
+function modifyStateGetter(cls) {
+  const { get } = Object.getOwnPropertyDescriptor(cls.prototype, 'state');
+
+  Object.defineProperty(cls.prototype, 'state', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      return get.call(this).state;
+    },
+    set: undefined
+  });
+}
+
+modifyStateGetter(History);
+modifyStateGetter(PopStateEvent);
+history.pushState = modifyStateFunction(pushState, 1);
+history.replaceState = modifyStateFunction(replaceState, 0);
+window.addEventListener('popstate', onPopstate);
 
 
 
@@ -308,23 +419,16 @@ const card = {
 
         for (const head of headers) {
           head.id = head.innerText.replace(" ", "-").toLowerCase()
-          console.log(head.tagName)
           toc += `<a class="button button--toc ${head.tagName}" href="#${head.id}">${head.innerText}</a>\n`
         } 
-
+          
         document.getElementById(tab.id).innerHTML = tab.innerHTML.replace("[[toc]]", 
         `<div class="toc">
           <h1 class="toc-title">Table of Contents</h1>
           ${toc}
-        </div>
-        `)
-
-
-
-         
+        </div>`)
       }
     },
-
     // Check if There is a data for profiles inside
     hasData(value) {
       const equalsIndex1 = value.indexOf(this.divisor);

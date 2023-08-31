@@ -95,23 +95,16 @@ const card = {
 
         for (const head of headers) {
           head.id = head.innerText.replace(" ", "-").toLowerCase()
-          console.log(head.tagName)
           toc += `<a class="button button--toc ${head.tagName}" href="#${head.id}">${head.innerText}</a>\n`
         } 
-
+          
         document.getElementById(tab.id).innerHTML = tab.innerHTML.replace("[[toc]]", 
         `<div class="toc">
           <h1 class="toc-title">Table of Contents</h1>
           ${toc}
-        </div>
-        `)
-
-
-
-         
+        </div>`)
       }
     },
-
     // Check if There is a data for profiles inside
     hasData(value) {
       const equalsIndex1 = value.indexOf(this.divisor);

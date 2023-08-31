@@ -4,10 +4,9 @@ const autoLinkExclude = [
   "toc"
 ]
 
-const autoLinkBtn = (name, id, path) => {
-  return path.includes("404") ?
-   `<button class="button button--error" onclick="changePage('${name}', '${id}', '${path}')">${name}</button>` :
-   `<button class="button button--autolink" onclick="changePage('${name}', '${id}', '${path}')">${name}</button>`
+const autoLinkBtn = (title, pageId, isError=false) => {
+  const btnClass = isError == true ? 'button--error' : 'button--autolink'
+  return `<button class="button ${btnClass}" onclick="changePage('${pageId}')">${title}</button>`
 }
 
 
@@ -16,75 +15,85 @@ function autoLink(value, directory) {
   const matches = [];
   let match;
   
+  // Creates matches object to iterate through
   while ((match = regex.exec(value)) !== null) {
+    // if unallowed box
     if (autoLinkExclude.includes(match[1])) continue;
+
+    // If using the format [[name | custom_name]]
     if (match[1].includes("|")) {
-      let [name_real, name_fale] = match[1].split("|")
-      matches.push([name_real.trim(), name_fale.trim(), match[1].trim()])
+      let [title, name_toshow] = match[1].split("|")
+      matches.push({
+          title: title.trim(),
+          pageId: title.trim().toLowerCase().replace(" ", "-"),
+          name_toshow: name_toshow.trim(),
+          original_string: match[1].trim(),
+          is_custom: true,
+        })
       continue
     }
-    matches.push([match[1].trim()]);
+    // If normal [[name]]
+    matches.push({
+      title: match[1].trim(),
+      pageId: match[1].trim().toLowerCase().replace(" ", "-"),
+      original_string: match[1].trim(),
+      is_custom: false,
+    });
   }
 
   // First check
-  for (let index = matches.length - 1; index >= 0; index--) { 
+  for (let index =  matches.length-1; index >= 0; index--) { 
     const item = matches[index]
-    const name_real = item[0]
-    let name_low;
 
-    if (item.length != 3) {
-      name_low = name_real.toLowerCase()
-    } else {
-      name_low = item[0].toLowerCase()
-    }
+    // Check if it does nnot exist
+    if (!directory.hasOwnProperty(item.pageId)) continue
 
-    if (directory.hasOwnProperty(name_low)) {
-      const title = directory[name_low].title
-      const path = directory[name_low].path
-      
-      
-      // Has a fake name
-      if (item.length == 3) {
-        value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], item[0], path))
-      } else {
-        value = value.replace(`[[${name_real}]]`, autoLinkBtn(title, name_real, path))
-      }
+    const title = directory[item.pageId].title
+    const path = directory[item.pageId].path
+    
+    value = value.replace(`[[${item.original_string}]]`, 
+                           autoLinkBtn(item.is_custom == true? item.name_toshow : title, 
+                                       item.pageId,
+                                       ))
 
-      matches.splice(index, 1);
-    }
+    // Remove finished entry from matches
+    matches.splice(index, 1)
+
   }
+
+  // Add error buttons
+  matches.map((item, index, array)=>{
+    value = value.replace(`[[${item.original_string}]]`, 
+      autoLinkBtn(item.is_custom == true? item.name_toshow : item.title, item.pageId, true))
+  }) 
+
+  return value
+}
+
 
   
   // Second Check
-  for (const entry in directory) {
-    const title = directory[entry].title
-    const loweredTitle = title.toLowerCase()
+  // for (const entry in directory) { 
+  //   const title = directory[entry].title
+  //   const pageId = title.toLowerCase()
 
 
-    for (let index = matches.length - 1; index >= 0; index--) { 
-      const item = matches[index]
+  //   for (const index=matches.length-1; index>=0; index--) { 
+  //     const item = matches[index]
 
-      if (loweredTitle == item[0].toLowerCase()) {
-        const path = directory[entry].path
+  //     if (pageId == item.pageId) {
+  //       const path = directory[entry].path
         
-        if (item.length == 3) {
-          console.log(item)
-          value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], entry, path))
-        } else {
-          value = value.replace(`[[${item[0]}]]`, autoLinkBtn(title, entry, path))
-        }
+  //       if (item.length == 3) {
+  //         console.log(item)
+  //         value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], entry, path))
+  //       } else {
+  //         value = value.replace(`[[${item[0]}]]`, autoLinkBtn(title, entry, path))
+  //       }
         
-        matches.splice(index, 1);
-      }
-    }
-  }
+  //       matches.splice(index, 1);
+  //     }
+  //   }
+  // }
 
 
-  matches.map((item, index, array)=>{
-    item.length == 3 ? 
-    value = value.replace(`[[${item[2]}]]`, autoLinkBtn(item[1], item[0], "assets/404.md")) :
-    value = value.replace(`[[${item[0]}]]`, autoLinkBtn(item[0], item[0], "assets/404.md"))    
-  })
-  
-  return value
-}

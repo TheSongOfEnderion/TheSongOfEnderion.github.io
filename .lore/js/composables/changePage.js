@@ -1,11 +1,9 @@
-function changePage(name, id, path) {
-  const url = new URL(window.location);
+function changePage(pageId) {
   
-  url.searchParams.set("p", id.replace(" ", "-").toLowerCase());
+  const url = new URL(window.location);  
+  url.searchParams.set("p", pageId);
   history.pushState({}, "", url);
 
-  console.log(name, path)
-
   // Reload vue page
-  root.reload(path, "404", name)
+  root.reload(pageId)
 }
