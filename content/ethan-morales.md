@@ -75,7 +75,7 @@ While Ethan is always seen wearing glasses, he does not have a bad eyesight. Rat
 When not in school, he always wears a dark, baggy sweater and a pair of dark pants. When he goes outside, he wears a dark track suit with orange-red stripes.
 
 # Personality
-Ethan was always encouraged by his father to be assertive and to take what is rightfully his. As a result, he grew up having a confident and proud personality. While initially peaceful, his bullying encounter with the then child Kevin caused Ethan to wake up to his aggressive tendencies. After years of battling and beating each other, Ethan ended up having a fearless, calculating, and aggressive personality, very much like that of Kevin.
+Ethan was always encouraged by his father to be assertive and to take what is rightfully his. As a result, he grew up having a confident and proud personality. While initially peaceful, his bullying encounter with the then child Kevin caused Ethan to wake up his aggressive tendencies which he inherited from his mother. After years of battling and beating each other, Ethan ended up having a fearless, calculating, and aggressive personality, very much like that of Kevin.
 
 He grew up having a bright, cheerful, and smart personality. Because Ethan grew up in Desteria during the first six years of his life, his morality ended up getting influenced, causing him to have rebellious and cold tendencies. However, his parents has taught him well enough that Ethan grew up with a kind personality, always smiling and helping those in need.
 
@@ -108,6 +108,12 @@ Because Ethan is a Ranker, he awakened many different forms of his ability.
 * **Atomic Manipulation** - The Ability to manipulate Matter at the atomic level. The user can control atoms, the building blocks of matter. The user can manipulate matter on an atomic level, and the energy associated with it. They can manipulate atomic structures of matter to achieve a variety of
 
 ## Passive
+* **Fire Immunity** - Much like his mother and little brother, Ethan is practically immune to all heat-based attacks and searing hot temperatures. The consequence of which is that Ethan never knew what heat feels like.
+* **Tough Skin** - A weaker form of ability he inherited from his father's harden, Ethan's skin is tougher than normal, capable of blocking attacks from knifes, swords, and even axes. However, anything that involves a very sharp cut can slice his skin.
+* **Atomic Sense** - Because of his Atomic manipulation, Ethan is fully capable of perceiving the world of atoms, often times using it to store information within his body.
+* **Enhanced Brain** - As a consequence of rapidly ranking his power, Ethan's brain adopted and became better at computational tasks and rapid thinking, allowing him to think faster in crucial moments.
+
+
 # Equipment
 # Trivia
 # Gallery

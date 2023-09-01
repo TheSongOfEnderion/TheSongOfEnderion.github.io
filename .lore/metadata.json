@@ -6,6 +6,11 @@
       "path": "content/ethan-morales.md",
       "parent": "tboah-characters"
     },
+    "giselle-iridao": {
+      "title": "Giselle Iridao",
+      "path": "content/giselle-iridao.md",
+      "parent": "tboah-characters"
+    },
     "home": {
       "title": "Home",
       "path": "content/home.md",

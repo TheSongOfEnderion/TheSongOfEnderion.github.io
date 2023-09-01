@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "node .lore/js/scripts/compile.js"
+    "build": "node .lore/js/scripts/compile.js",
+    "run": "node .lore/js/scripts/run.js"
   },
   "keywords": [],
   "author": "",

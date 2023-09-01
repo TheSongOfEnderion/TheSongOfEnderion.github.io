@@ -84,3 +84,17 @@ $profile--width: 250px;
     margin-left: 10px;
   }
 }
+
+// Query
+@media screen and (max-width: 800px) {
+  .profilebox {
+    width: 230px;
+    font-size: 11px;
+    line-height: 15px;
+
+    .profile--image {
+      max-height: 350px;
+    }
+  }
+}
+ 

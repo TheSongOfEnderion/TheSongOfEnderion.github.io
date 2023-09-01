@@ -49,12 +49,10 @@ function autoLink(value, directory) {
     if (!directory.hasOwnProperty(item.pageId)) continue
 
     const title = directory[item.pageId].title
-    const path = directory[item.pageId].path
     
     value = value.replace(`[[${item.original_string}]]`, 
                            autoLinkBtn(item.is_custom == true? item.name_toshow : title, 
-                                       item.pageId,
-                                       ))
+                                       item.pageId))
 
     // Remove finished entry from matches
     matches.splice(index, 1)

@@ -325,7 +325,7 @@ summary {
 }
 
 .card {
-  width: 70vw;
+  width: 50vw;
   padding: 30px;
   border-radius: 20px;
   background-color: white;
@@ -384,6 +384,32 @@ summary {
   font-family: Rubik Light;
 }
 
+@media screen and (max-width: 1200px) {
+  .card {
+    width: 60vw;
+  }
+}
+@media screen and (max-width: 1000px) {
+  .card {
+    width: 70vw;
+  }
+}
+@media screen and (max-width: 900px) {
+  .card {
+    width: 80vw;
+  }
+}
+@media screen and (max-width: 800px) {
+  .card {
+    width: 90vw;
+    padding: 20px;
+  }
+}
+@media screen and (max-width: 500px) {
+  .card {
+    width: 100vw;
+  }
+}
 .profilebox {
   float: right;
   display: block;
@@ -441,6 +467,16 @@ summary {
   margin-left: 10px;
 }
 
+@media screen and (max-width: 800px) {
+  .profilebox {
+    width: 230px;
+    font-size: 11px;
+    line-height: 15px;
+  }
+  .profilebox .profile--image {
+    max-height: 350px;
+  }
+}
 .button {
   padding: 3px 5px 3px 5px;
   margin-right: 5px;

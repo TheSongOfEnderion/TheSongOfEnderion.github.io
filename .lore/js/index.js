@@ -1,5 +1,5 @@
 
-var root;
+var root; //
 var historyList = [];
 var globalPosition = null;
 
@@ -27,24 +27,21 @@ function start() {
       if (pageId == null || pageId == "") pageId = "home"
       if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
 
-      
-
+      // Loads page
       this.reload(pageId)
 
-      // window.onpopstate = function(event) {
-      //   event.preventDefault();
-      //   console.log(event)
-      //   // historyList
-      // };
+      // Setup forward and backward handler using johanholmerin's code
       window.addEventListener('forward', event => {
 
         if (globalPosition+1 < historyList.length) globalPosition++
         this.reload(historyList[globalPosition], true)
+        console.log(event)
       });
 
       window.addEventListener('back', event => {
         if (globalPosition !== 0) globalPosition--
         this.reload(historyList[globalPosition], true)
+        console.log(event)
       });
 
     },
@@ -66,7 +63,7 @@ function start() {
         if (isPopState == false) historyList.push(pageId)
         // console.log("gistory: ", historyList, globalPosition, pageId)
          
- 
+
         // Get metadata file 
         let isError = false
         let pageMeta = this.directory[pageId];
@@ -79,8 +76,9 @@ function start() {
         this.content = await (await fetch(pageMeta.path)).text() 
         this.pageName = pageMeta.title
 
-        if (isError = true) {
-          this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`}
+        if (isError == true) {
+          this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`
+        }
         
         // Update App
         this.$forceUpdate();
@@ -166,12 +164,10 @@ function autoLink(value, directory) {
     if (!directory.hasOwnProperty(item.pageId)) continue
 
     const title = directory[item.pageId].title
-    const path = directory[item.pageId].path
     
     value = value.replace(`[[${item.original_string}]]`, 
                            autoLinkBtn(item.is_custom == true? item.name_toshow : title, 
-                                       item.pageId,
-                                       ))
+                                       item.pageId))
 
     // Remove finished entry from matches
     matches.splice(index, 1)
@@ -217,8 +213,9 @@ function changePage(pageId) {
   
   const url = new URL(window.location);  
   url.searchParams.set("p", pageId);
+  history.replaceState(null, null, ' ');
   history.pushState({}, "", url);
-
+  
   // Reload vue page
   root.reload(pageId)
 }

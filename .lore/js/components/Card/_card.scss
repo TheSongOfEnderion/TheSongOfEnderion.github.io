@@ -9,7 +9,7 @@
 
 .card {
   // Block
-  width: 70vw;
+  width: 50vw;
   padding: $gb-padding; 
   border-radius: $gb-border-radius; 
     
@@ -19,6 +19,7 @@
   font-size: 13px;
   font-family: Rubik Light; 
   line-height: 20px;
+  
   
   // Misc
   overflow: auto;
@@ -85,4 +86,39 @@
   // Element
   color: white;
   font-family: Rubik Light;
+}
+
+
+// Media
+
+
+@media screen and (max-width: 1200px) {
+  .card {
+    width: 60vw;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .card {
+    width: 70vw;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .card {
+    width: 80vw;
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .card {
+    width: 90vw;
+    padding: 20px;
+  }
+}
+ 
+@media screen and (max-width: 500px) {
+  .card {
+    width: 100vw;
+  }
 }
