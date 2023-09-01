@@ -16,9 +16,20 @@
 <body onload="start()">
 
   <div id="app">
+    <Sidebarbtn>≡</Sidebarbtn>
     <div class="container full">
-      <Card :title="pageName" :content="content" :directory="directory"/>
+      
 
+      <!-- Sidebar for navigation -->
+      <Sidebar :directory="directory"
+               :project-title="projectTitle"
+               :project-subtitle="projectSubtitle">
+      </Sidebar>
+
+      <!-- Card component - All contents comes here -->
+      <Card :title="pageName"
+            :content="content"
+            :directory="directory"/>      
     </div>
   </div>
 

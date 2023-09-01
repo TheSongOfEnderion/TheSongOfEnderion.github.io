@@ -3,12 +3,16 @@ var root; //
 var historyList = [];
 var globalPosition = null;
 
-function start() {
+function start() { 
   const app = Vue.createApp({
     data() {
       return {
         directory: {},
 
+        // Sidebar
+        projectTitle: "",
+        projectSubtitle: "",
+        
         // Card
         content: "",
         pageName: ""
@@ -17,8 +21,12 @@ function start() {
     },
     async mounted() {
       // Get Metadata
-      const metadata = await (await fetch(".lore/metadata.json")).json()
+      const metadata = await (await fetch(".lore/metadata.json")).json();
       
+      // Save key-info
+      this.projectTitle = metadata.title;
+      this.projectSubtitle = metadata.subtitle;
+
       // Get Directory
       this.directory = metadata.directory
       
@@ -90,6 +98,8 @@ function start() {
   })
 
   root = mount(app)
+
+
 }
 
 function mount(app) {
@@ -98,6 +108,9 @@ function mount(app) {
     breadcrumbs,
     card,
     profilebox,
+    searchbox,
+    sidebar,
+    sidebarbtn,
     tab,
     toggle,
   ]
@@ -532,6 +545,97 @@ const profilebox = {
   `
 }
 
+const searchbox = {
+  name: "Searchbox",
+  props: {},
+  template: `
+    <input type="text" placeholder="Search.."
+           class="searchbox">
+  `
+}
+
+const sidebar = {
+  name: "Sidebar",
+  data() {
+    return {
+      navs: {},
+      test: "Asd",
+    }
+  },
+  components: ['Searchbox', 'Toggle'],
+  props: {
+    projectTitle: { type: String, default: "Default" },
+    projectSubtitle: { type: String, default: "Default Subtitle" },
+    directory: { type: Object, required: true }
+  },
+  async mounted() {
+    const resp = await (fetch("assets/nav.md"))
+    if (resp.status === 404) {
+      console.log("Nav not found")
+      return
+    }
+
+    const navs = (await resp.text()).trim().split("\n")
+    for (const nav of navs) {
+      console.log(nav)
+      this.navs[nav.replace(/\[\]/g, "")] = autoLink(nav, this.directory)
+    }    
+
+    console.log(this.navs)
+  },
+  methods: {
+    closeSidebar() {
+      document.getElementById("sidebarobj").style.top = "-1000px";
+      document.getElementById("sidebaropen").style.display = "block";
+    }
+  },
+  template: `
+  <div class="sidebar" id="sidebarobj">
+    <button class="close" @click="closeSidebar">✕</button>
+
+    <!-- Titles section -->
+    <div class="titles">
+      <h1 class="title">{{ projectTitle }}</h1>
+      <h2 class="subtitle">{{ projectSubtitle }}</h2>
+    </div>
+
+    <!-- Search Box -->
+    <div class="inputs">
+    <Searchbox/> <Toggle/>
+    </div>
+    
+    <!-- Navigation Links -->
+    <div class="nav-links">
+      <template v-for="(value, name, index) in navs">
+        <span v-html='value' class="button--sidebar"></span> 
+        <br> 
+      </template>
+    </div>
+
+  </div>
+`
+}
+
+const sidebarbtn = {
+  name: "Sidebarbtn",
+  props: {
+
+  },
+  methods: {
+    openSidebar() {
+      document.getElementById("sidebarobj").style.top = "0px";
+      document.getElementById("sidebaropen").style.display = "none";
+    }
+  },
+  template: `
+    <button class="button--sidebartoggle"
+            id="sidebaropen"
+            @click="openSidebar">
+            <slot/>
+    </button>
+  `
+}
+
 const tab = {
   name: "Tab",
   data() {
@@ -557,7 +661,7 @@ const tab = {
       const targetTab = `${name}-${this.groupclass}-content`
       const tabs = document.getElementsByClassName(this.groupclass)
       for (const tab of tabs) {
-        if (tab.id == targetTab) {
+      if (tab.id == targetTab) {
           tab.classList.remove("hide")
           continue;
         } 
@@ -612,7 +716,13 @@ const tab = {
 
 const toggle = {
   name: "Toggle",
-  template: ``
+  props: {},
+  template: `
+    <span class="toggle">
+      <input type="checkbox" id="switch"/>
+      <label for="switch">Toggle</label>
+    </span>
+  `
 }
 
 

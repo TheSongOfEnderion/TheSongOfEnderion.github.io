@@ -1,0 +1,137 @@
+@use '../../../css/vars' as *;
+
+$sidebar--bg: $black;
+
+.sidebar {
+  // Block
+  position: fixed;
+  top: 0px;
+  left: 80px;
+  width: 220px;
+  height: 90vh;
+
+  // Box
+  padding: 20px;
+  padding-top: 10px;
+  border-radius: $gb-border-radius;
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
+
+  // Element
+  background-color: $sidebar--bg;
+  color: white;
+  
+  // Misc
+  z-index:  999;
+  @include shadow;
+  transition: 0.5s ease-in-out;
+
+  // Children
+  .nav-links {
+    line-height: 30px;
+    font-family: Rubik Light;
+  }
+}
+
+
+.titles {
+  // Block
+  margin: 10px 3px;
+
+  .title {
+    // Block
+    margin: 0px;
+    // Element
+    font-size: 1.4em;
+    font-family: cambria;
+    font-weight: 100;
+  }
+
+  .subtitle {
+    // Block
+    margin: 0px;
+    // Element
+    font-size: 12px;
+    font-family: cambria;
+    font-weight: 300;
+    font-style: italic;
+    text-align: justify;
+  }
+}
+
+.button--sidebar {
+  .button {
+    // Element
+    background-color: transparent;
+    color: white;
+
+    // Misc
+    transition: 0.1s linear;
+   
+    // Hover
+    &:hover {
+      background-color: transparent;
+      color: $blue;
+      transform: scale(1.1);
+    }
+  }
+}
+
+.close {
+  // Block
+  display: none;
+  float: right;
+  margin-top: 10px;
+  margin-right: -5px;
+  padding: 2px 6px;
+  border: none;
+  border-radius: 4px;
+
+  // Element
+  background-color: transparent;
+  color: white;
+  font-size: 1.4em;
+
+  // Misc
+  cursor: pointer;
+  transition: 0.1s ease-in-out;
+  // Effect
+  &:hover {
+    background-color: $blue;
+    transform: scale(1.1);
+    @include shadow;
+  }
+  &:active, :focus {
+    transform: scale(0.9);
+  }
+}
+
+
+@media screen and (max-width: 1200px) {
+  .sidebar {
+    // visibility: hidden;
+    left: 10px;
+    top: -1000px;
+    background-color: rgba($black, 0.98);
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+  }
+  .close {
+    display: block;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+
+}
+
+@media screen and (max-width: 900px) {
+
+}
+
+@media screen and (max-width: 800px) {
+
+}
+ 
+@media screen and (max-width: 500px) {
+
+}

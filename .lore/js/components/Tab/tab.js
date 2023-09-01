@@ -23,7 +23,7 @@ const tab = {
       const targetTab = `${name}-${this.groupclass}-content`
       const tabs = document.getElementsByClassName(this.groupclass)
       for (const tab of tabs) {
-        if (tab.id == targetTab) {
+      if (tab.id == targetTab) {
           tab.classList.remove("hide")
           continue;
         } 

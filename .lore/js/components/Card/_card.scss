@@ -2,8 +2,8 @@
 
 .card-container {
   height: 100%;
-  margin-top: 100px;
-  margin-bottom: 50px;
+  margin-top: 60px;
+  margin-bottom: 100px;
 }
 
 
@@ -15,15 +15,15 @@
     
   // Element
   background-color: white; 
-  color: #434343;
+  color: #252525;
   font-size: 13px;
   font-family: Rubik Light; 
   line-height: 20px;
   
-  
   // Misc
   overflow: auto;
   transition: 0.5s linear;
+  @include shadow;
 
   // Children
   blockquote {
@@ -34,6 +34,12 @@
 
   }
 }  
+
+#title  {
+  margin: 0px;
+  margin-bottom: 10px;
+  font-size: 3em;
+}
 
 .card-content {
   font-family: Rubik Light !important;
@@ -53,11 +59,15 @@
   background-color: $grey;
 
   // Misc
+  // @include shadow;
+
+  // Children
   .toc-title {
     font-weight: bold;
     font-size: 14px;
     text-align: center;
     margin: 0px; 
+
   }  
 
   .H2 {
@@ -87,6 +97,7 @@
   // Element
   color: white;
   font-family: Rubik Light;
+
 }
 
 
@@ -109,12 +120,20 @@
   .card {
     width: 80vw;
   }
+  #title {
+    font-size: 2.5em;
+  }
 }
 
 @media screen and (max-width: 800px) {
   .card {
     width: 90vw;
     padding: 20px;
+  }
+  #title {
+    text-align: center;
+    
+  transition: 0.4s linear;
   }
 }
  

@@ -1,0 +1,7 @@
+[[Home]]
+[[Story]]
+[[Characters]]
+[[Lore]]
+[[Librarium]]
+[[About]]
+[[Ethan Morales]]

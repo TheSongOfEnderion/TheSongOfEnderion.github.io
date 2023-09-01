@@ -2,12 +2,16 @@ var root; //
 var historyList = [];
 var globalPosition = null;
 
-function start() {
+function start() { 
   const app = Vue.createApp({
     data() {
       return {
         directory: {},
 
+        // Sidebar
+        projectTitle: "",
+        projectSubtitle: "",
+        
         // Card
         content: "",
         pageName: ""
@@ -16,8 +20,12 @@ function start() {
     },
     async mounted() {
       // Get Metadata
-      const metadata = await (await fetch(".lore/metadata.json")).json()
+      const metadata = await (await fetch(".lore/metadata.json")).json();
       
+      // Save key-info
+      this.projectTitle = metadata.title;
+      this.projectSubtitle = metadata.subtitle;
+
       // Get Directory
       this.directory = metadata.directory
       
@@ -89,4 +97,7 @@ function start() {
   })
 
   root = mount(app)
+
+
 }
+

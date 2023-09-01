@@ -24,12 +24,13 @@ $profile--width: 250px;
 
   // Misc
   transition: 0.5s linear;
+  @include shadow;
 
   // Children
   .tab-buttons {
     text-align: center;
   }
-
+  
   .profile--image {
     max-height: 500px;
     width: 100%;
@@ -50,6 +51,7 @@ $profile--width: 250px;
     color: white;
     text-align: center;
     font-size: $title--font-size;
+
   }
 }
 
@@ -98,6 +100,10 @@ $profile--width: 250px;
 
     .profile--image {
       max-height: 350px;
+    }
+
+    table {
+      width: 100%;
     }
   }
 }
