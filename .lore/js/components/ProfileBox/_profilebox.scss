@@ -22,6 +22,9 @@ $profile--width: 250px;
   background-color: $grey;
   font-size: $profile--font-size;
 
+  // Misc
+  transition: 0.5s linear;
+
   // Children
   .tab-buttons {
     text-align: center;
@@ -31,6 +34,7 @@ $profile--width: 250px;
     max-height: 500px;
     width: 100%;
     object-fit: contain;
+    transition: 0.5s linear;
   }
 
   .profile--title {
@@ -98,3 +102,17 @@ $profile--width: 250px;
   }
 }
  
+
+@media screen and (max-width: 500px) {
+  .profilebox {
+    float: none;
+    width: 100%;
+    margin-left: 0px;
+    margin-bottom: 20px;
+    font-size: 12px;
+
+    .profile--image {
+      max-height: 500px;
+    }
+  }
+}

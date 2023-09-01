@@ -334,6 +334,7 @@ summary {
   font-family: Rubik Light;
   line-height: 20px;
   overflow: auto;
+  transition: 0.5s linear;
 }
 .card blockquote {
   font-style: italic;
@@ -420,6 +421,7 @@ summary {
   margin-left: 20px;
   background-color: #F5F5F5;
   font-size: 12px;
+  transition: 0.5s linear;
 }
 .profilebox .tab-buttons {
   text-align: center;
@@ -429,6 +431,7 @@ summary {
   width: 100%;
   -o-object-fit: contain;
      object-fit: contain;
+  transition: 0.5s linear;
 }
 .profilebox .profile--title {
   display: inline-block;
@@ -475,6 +478,18 @@ summary {
   }
   .profilebox .profile--image {
     max-height: 350px;
+  }
+}
+@media screen and (max-width: 500px) {
+  .profilebox {
+    float: none;
+    width: 100%;
+    margin-left: 0px;
+    margin-bottom: 20px;
+    font-size: 12px;
+  }
+  .profilebox .profile--image {
+    max-height: 500px;
   }
 }
 .button {
