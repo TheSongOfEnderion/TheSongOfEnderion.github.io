@@ -1,13 +1,18 @@
 
 var root; //
+
+
 var historyList = [];
 var globalPosition = null;
+
 
 function start() { 
   const app = Vue.createApp({
     data() {
       return {
         directory: {},
+        rerender: true,
+        toggleState: false,
 
         // Sidebar
         projectTitle: "",
@@ -26,6 +31,7 @@ function start() {
       // Save key-info
       this.projectTitle = metadata.title;
       this.projectSubtitle = metadata.subtitle;
+      document.getElementsByTagName("title")[0].innerText = this.projectTitle;
 
       // Get Directory
       this.directory = metadata.directory
@@ -40,7 +46,6 @@ function start() {
 
       // Setup forward and backward handler using johanholmerin's code
       window.addEventListener('forward', event => {
-
         if (globalPosition+1 < historyList.length) globalPosition++
         this.reload(historyList[globalPosition], true)
         console.log(event)
@@ -51,6 +56,8 @@ function start() {
         this.reload(historyList[globalPosition], true)
         console.log(event)
       });
+
+      setup()
 
     },
     methods: {
@@ -88,7 +95,12 @@ function start() {
           this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`
         }
         
+        
         // Update App
+        // this.rerender = false;
+        // await Vue.nextTick()
+        // this.rerender = true;
+        
         this.$forceUpdate();
       },
       getCurrentPageId() {
@@ -100,6 +112,24 @@ function start() {
   root = mount(app)
 
 
+}
+
+
+function setup() {
+
+  // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/
+  window.scroll({
+    top: 2500, 
+    left: 0, 
+    behavior: 'smooth'
+  });
+  
+  // Scroll certain amounts from current position 
+  window.scrollBy({ 
+    top: 100, // could be negative value
+    left: 0, 
+    behavior: 'smooth' 
+  });
 }
 
 function mount(app) {
@@ -128,7 +158,9 @@ function mount(app) {
 // ==================
 const autoLinkExclude = [
   "spoiler",
+  "spoiler\\",
   "spoiler/",
+  "/spoiler",
   "toc"
 ]
 
@@ -221,6 +253,29 @@ function autoLink(value, directory) {
   //     }
   //   }
   // }
+
+function autoSpoil(value) {
+
+  const spoilers = value.match(/\[\[spoiler\]\]([\S\s]*?)\[\[\/spoiler\]\]/gm)
+
+  for (let index in spoilers) {
+    const spoiler = spoilers[index]
+
+    // console.log(spoiler)
+
+    value = value.replace(spoiler, 
+      "<span class=\"spoilers\">" + 
+      spoiler
+        .replace("[[spoiler]]", "")
+        .replace("[[/spoiler]]", "")
+        .trim() 
+        + "</span>")
+    // console.log(value)
+  }
+  
+
+  return value
+}
 
 function changePage(pageId) {
   
@@ -337,24 +392,34 @@ const card = {
   name: `Card`,
   data() {
     return {
-      tabs: {},
-      profile: {},
-      rerender: true,
+      // Card Data
+      areas: {
+        spoiler: {
+          tabs: {},
+          profile: {}
+        },
+        preview: {
+          tabs: {},
+          profile: {}
+        },
+      },
 
-      divisor: "========================================================"
+      // Misc
+      rerender: true,
+      noPreview: false,
+
+      // Divisors
+      profileDivisor: "=============================",
+      spoilerDivisor: "----------------------------------------------------------------------",
     }
   },
   props: {
     title: { type: String, default: "Ethan Morales" },
     content: { type: String },
-    directory: { type: Object, required: true }
+    directory: { type: Object, required: true },
+    toggleState: { type: Boolean }
   },
   components: ['BreadCrumbs'],
-  computed: {
-    isProfileExist() {
-      return Object.keys(this.profile).length != 0;
-    }
-  },
   watch: {
     content: {
       immediate: true,
@@ -362,27 +427,37 @@ const card = {
         // Return if value is empty
         if (value == '') return  
 
-        // Content to be modified
-        let content = value
-
+        // Refresh
         this.profile = {}
-        // Extracts profile box content
-        if (this.hasData(value)) {
-          const rawsplit = value.split(this.divisor)
-          this.profile = jsyaml.load(autoLink(rawsplit[1], this.directory), 'utf8');
 
-          // Sets into content the half without any profile box content
-          content = rawsplit[2].trim()
+        // Start
+        const [spoilerContents, previewContent] = value.split(this.spoilerDivisor).slice(0, 2);
+
+        // Checks if there is no preview
+        if (previewContent == undefined) this.noPreview = true
+  
+        const areas = {
+          'spoiler': spoilerContents.trim(), 
+          'preview': previewContent == undefined ? "" : previewContent.trim()
         }
 
-        // Get tabs and process content
-        this.tabs = this.createContent(content, this.directory)
+        for (const area in areas) {
+          let [content, profile] = this.loadProfile(areas[area])
 
-        
+          this.areas[area].profile = profile
+          this.areas[area].tabs = this.createContent(content, this.directory)
+        }
+
+        // Refresh
         await this.refresh()
-
         this.fixQuote()
         this.makeTOC()
+        this.toggleArea()
+      }
+    },
+    toggleState: {
+      handler(value) {
+        this.toggleArea()
       }
     }
   },
@@ -390,7 +465,9 @@ const card = {
     createContent(value, directory) {
 
       const results = {};
-      if (value.includes("===")) {
+      const regex = /===(?!.*===)([^=]+)===/
+
+      if (regex.test(value)) {
         // Split text by "===", remove empty sections
         const sections = value.split("===").filter(section => section.trim() !== ""); 
       
@@ -408,9 +485,9 @@ const card = {
         for (const name in results) {
           // Convert md into html
           results[name] = marked.parse(results[name]);
+
           // convert custom components into html
           results[name] = autoLink(results[name], directory)
-
         }
       } else {
         // if there is no tabs
@@ -419,6 +496,26 @@ const card = {
       }
       return results;
     },
+    loadProfile(value) {
+      if (!this.hasData(value)) return [value, {}];
+      
+      // Separate content and profile
+      const parts = value.split(this.profileDivisor);
+      
+      // Load yaml
+      let profile = {};
+      try {
+        profile = jsyaml.load(autoLink(parts[1].replace(/=/g, "").trim(), this.directory), 'utf8');
+      } catch (error) {
+        console.log("Bad YAML Data on .md file");
+        return [value, {}];
+      }
+      
+      // Load content
+      const content = parts[2].trim();
+    
+      return [content, profile];
+   },
     makeTOC() {
       const tabs = document.getElementsByClassName("tab")
       
@@ -441,8 +538,8 @@ const card = {
     },
     // Check if There is a data for profiles inside
     hasData(value) {
-      const equalsIndex1 = value.indexOf(this.divisor);
-      const equalsIndex2 = value.lastIndexOf(this.divisor);
+      const equalsIndex1 = value.indexOf(this.profileDivisor);
+      const equalsIndex2 = value.lastIndexOf(this.profileDivisor);
       
       if (equalsIndex1 !== -1 && equalsIndex2 !== -1 && equalsIndex1 < equalsIndex2) {
           const textBetweenEquals = value.substring(equalsIndex1 + 1, equalsIndex2);
@@ -465,26 +562,45 @@ const card = {
       await Vue.nextTick()
       this.rerender = true;
     },
+    isProfileExist(area) {
+      return Object.keys(this.areas[area].profile).length != 0
+    },
+    toggleArea() {
+      const spoilerArea = document.getElementById("spoiler-area");
+      const previewArea = document.getElementById("preview-area");
+      
+      if (this.noPreview || this.toggleState) {
+        spoilerArea.classList.remove("hide");
+        previewArea.classList.add("hide");
+      } else {
+        spoilerArea.classList.add("hide");
+        previewArea.classList.remove("hide");
+      }
+    }
   },
   template: `
     <div class="card-container">
       <h1 id="title">
-        {{ title }}
+        {{ title }} 
       </h1>
       
       <div class="card">
         <BreadCrumbs/>
 
-        <ProfileBox :profile="profile" v-if="isProfileExist"/>
-
-        <div id="card-content" v-if="rerender">
-            <Tab :tabs="tabs"/>
+        <div v-for="(area, name, index) in areas"
+             v-if="rerender"
+             :id="name + '-area'"
+             >
+          <ProfileBox :profile="area.profile" v-if="isProfileExist(name)"/>
+        
+          <div id="card-content">
+              <Tab :tabs="area.tabs"/>
+          </div>
         </div>
 
       </div>
     </div>
   ` 
-
 }
 
 const profilebox = {
@@ -545,12 +661,78 @@ const profilebox = {
   `
 }
 
+var pages = []
+
+const gotoPage = (pageId) => {
+  document.getElementById("searchbox").value  = ''
+
+  document.getElementById("suggestions").innerHTML = ''
+  changePage(pageId)
+
+}
+
+const removeSuggestions = () => {
+  // document.getElementById("suggestions").innerHTML = ''
+
+}
+
 const searchbox = {
   name: "Searchbox",
-  props: {},
+  data() {
+    return {
+      pages: []
+    }
+  },
+  props: {
+    directory: { type: Object, required: true },
+  },
+  watch: {
+    directory: {
+      handler(value) {
+
+
+        for (const entry in value) {
+          const item = value[entry].title
+          pages.push({name: item, pageId: entry})
+        }
+
+        const searchbox = document.getElementById("searchbox")
+        searchbox.addEventListener("keydown", function(e) {
+          const val = e.target.value
+          const sugs = document.getElementById("suggestions")
+          
+
+          let suggestedList = []
+
+          for (const entry of pages) {
+            if (entry.name.toLowerCase().includes(val.toLowerCase().trim())) {
+              suggestedList.push(entry)
+            }
+          } 
+
+          sugs.innerHTML = ''
+
+          for (const item of suggestedList) {
+            sugs.insertAdjacentHTML('beforeend', `
+            <div class="suggestion-item" onclick="gotoPage('${item.pageId}')">
+              ${item.name}
+            </div>
+          `);
+          }
+          
+        })
+      }
+    }
+  },
   template: `
-    <input type="text" placeholder="Search.."
-           class="searchbox">
+    <div class="searchbox-area">
+      <input type="text" placeholder="Search.."
+             class="searchbox"
+             id="searchbox" onfocusout="removeSuggestions()">
+      <div id="suggestions"></div>
+    </div>
+
+     
   `
 }
 
@@ -563,30 +745,62 @@ const sidebar = {
     }
   },
   components: ['Searchbox', 'Toggle'],
+  computed: {
+    isCurrentNav() {
+      let pageId = (new URLSearchParams(window.location.search)).get('p')
+      if (pageId == null || pageId == "") pageId = "home"
+      // console.log(pageId)
+      return pageId
+      // return 'home'
+    }
+  },
   props: {
     projectTitle: { type: String, default: "Default" },
     projectSubtitle: { type: String, default: "Default Subtitle" },
-    directory: { type: Object, required: true }
+    directory: { type: Object, required: true },
+    rerender: { type: Boolean, default: true }
   },
-  async mounted() {
-    const resp = await (fetch("assets/nav.md"))
-    if (resp.status === 404) {
-      console.log("Nav not found")
-      return
+  watch: {
+    directory: {
+      async handler(value) {
+        const resp = await (fetch("assets/nav.md"))
+        if (resp.status === 404) {
+          console.log("Nav not found")
+          return
+        }
+    
+        const navs = (await resp.text()).trim().split("\n")
+        let lastNav = ""
+        for (const nav of navs) {
+          const newnav = nav.replace(/\[\]/g, "").trim()
+          if (newnav == "") continue;
+          
+          // if has subnav
+          if (newnav.startsWith("- ")) {
+            this.navs[lastNav]['subnav'][newnav] = autoLink(nav, this.directory)
+            continue
+          }
+          
+          // if No subnav
+          this.navs[newnav] = {
+            main: autoLink(nav, this.directory),
+            subnav: {}
+          }
+          lastNav = newnav
+        }    
+      }
     }
-
-    const navs = (await resp.text()).trim().split("\n")
-    for (const nav of navs) {
-      console.log(nav)
-      this.navs[nav.replace(/\[\]/g, "")] = autoLink(nav, this.directory)
-    }    
-
-    console.log(this.navs)
   },
   methods: {
     closeSidebar() {
-      document.getElementById("sidebarobj").style.top = "-1000px";
+      document.getElementById("sidebarobj").style.top = "-5000px";
       document.getElementById("sidebaropen").style.display = "block";
+    },
+    toggleSubNav(navid) {
+      document.getElementById(navid).classList.toggle("hide")
+    },
+    getNameClean(name) {
+      return name.replace(/\[/g, "").replace(/\]/g, "").trim().toLowerCase()
     }
   },
   template: `
@@ -597,18 +811,37 @@ const sidebar = {
     <div class="titles">
       <h1 class="title">{{ projectTitle }}</h1>
       <h2 class="subtitle">{{ projectSubtitle }}</h2>
-    </div>
+    </div>  
 
     <!-- Search Box -->
     <div class="inputs">
-    <Searchbox/> <Toggle/>
+    <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
     </div>
     
     <!-- Navigation Links -->
-    <div class="nav-links">
+    <div class="nav-links" v-if="rerender">
       <template v-for="(value, name, index) in navs">
-        <span v-html='value' class="button--sidebar"></span> 
-        <br> 
+          
+          <!-- Main Button -->
+          <span v-html="value.main"
+                :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"></span> 
+          <button v-if="Object.keys(value.subnav).length != 0"
+                  class="button button--showsub" 
+                  @click="toggleSubNav(name + '-navid')">
+                  ✢
+          </button><br> 
+          
+          <!-- Sub button -->
+          <div v-if="Object.keys(value.subnav).length != 0"
+               class="button--subnav hide"
+               :id="name + '-navid'">
+
+            <template v-for="(valuesub, namesub, indexsub) in value.subnav">
+              <span v-html="valuesub" class="button--mainnav"></span> 
+              <br>
+            </template>
+          </div>
+
       </template>
     </div>
 
@@ -716,10 +949,44 @@ const tab = {
 
 const toggle = {
   name: "Toggle",
-  props: {},
+  data() {
+    return {
+      uniqueId: ""
+    }
+  },
+  props: {
+    projectTitle: { type: String, required: true }
+  },
+  watch: {
+    projectTitle: {
+      handler(value) {
+        this.uniqueId = this.projectTitle.toLowerCase().trim().replace(/\s/g, "-")+"-storage"
+
+        if (localStorage.getItem(this.uniqueId) === null) {
+          localStorage.setItem(this.uniqueId, "false");
+        } 
+        // localStorage.setItem(this.uniqueId, "false");
+        const toggleState = localStorage.getItem(this.uniqueId)
+        document.getElementById("switch").checked = toggleState === "true" ? true : false
+
+        root.toggleState = document.getElementById("switch").checked
+        
+      }
+    }
+  },
+  methods: {
+    toggleArea() {
+      
+      const toggleState = document.getElementById("switch").checked
+      localStorage.setItem(this.uniqueId, toggleState);
+      root.toggleState = toggleState
+      console.log(root.toggleState)
+
+    }
+  },
   template: `
     <span class="toggle">
-      <input type="checkbox" id="switch"/>
+      <input type="checkbox" id="switch" @click="toggleArea"/>
       <label for="switch">Toggle</label>
     </span>
   `

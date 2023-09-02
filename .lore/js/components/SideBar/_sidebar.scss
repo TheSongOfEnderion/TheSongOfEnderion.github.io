@@ -25,12 +25,6 @@ $sidebar--bg: $black;
   z-index:  999;
   @include shadow;
   transition: 0.5s ease-in-out;
-
-  // Children
-  .nav-links {
-    line-height: 30px;
-    font-family: Rubik Light;
-  }
 }
 
 
@@ -59,23 +53,65 @@ $sidebar--bg: $black;
   }
 }
 
-.button--sidebar {
-  .button {
-    // Element
-    background-color: transparent;
-    color: white;
+
+.nav-links {
+  line-height: 30px;
+  font-family: Rubik Light;
+  user-select: none;
+  
+  // Children
+  .button--showsub {
+    float: right; 
+    color: #ffffff44;
 
     // Misc
-    transition: 0.1s linear;
-   
-    // Hover
+    transition: 0.2s ease-in-out;
+    transform: scale(1);
+    user-select: none;
+
+    // Effect
     &:hover {
-      background-color: transparent;
-      color: $blue;
       transform: scale(1.1);
+    }
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+
+  .button--mainnav {
+    .button {
+      // Element
+      background-color: transparent;
+      color: white;
+  
+      // Misc
+      transition: 0.1s linear;
+     
+      // Hover
+      &:hover {
+        background-color: transparent;
+        color: $blue;
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  
+  .button--subnav {
+    font-size: 14px;
+    line-height: 15px;
+    margin-left: 10px;
+  }
+  
+  .button--active {
+    .button {
+      color: $blue !important; 
     }
   }
 }
+
+
+
 
 .close {
   // Block
@@ -107,11 +143,10 @@ $sidebar--bg: $black;
 }
 
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1000px) {
   .sidebar {
-    // visibility: hidden;
     left: 10px;
-    top: -1000px;
+    // top: -5000px;
     background-color: rgba($black, 0.98);
     box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
   }
@@ -120,9 +155,9 @@ $sidebar--bg: $black;
   }
 }
 
-@media screen and (max-width: 1000px) {
+// @media screen and (max-width: 1000px) {
 
-}
+// }
 
 @media screen and (max-width: 900px) {
 

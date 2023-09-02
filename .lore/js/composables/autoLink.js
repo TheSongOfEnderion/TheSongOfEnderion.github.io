@@ -1,6 +1,8 @@
 const autoLinkExclude = [
   "spoiler",
+  "spoiler\\",
   "spoiler/",
+  "/spoiler",
   "toc"
 ]
 

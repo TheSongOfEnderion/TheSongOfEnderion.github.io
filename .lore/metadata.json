@@ -2,6 +2,22 @@
   "title": "The Song of Enderion",
   "subtitle": "A hymn through Eternity",
   "directory": {
+    "home": {
+      "title": "Home",
+      "path": "content/home.md",
+      "parent": "geh"
+    },
+    "nav": {
+      "title": "404",
+      "path": "assets/nav.md",
+      "parent": "geh"
+    },
+    "404": {
+      "title": "404",
+      "path": "assets/404.md",
+      "parent": "geh"
+    },
+
     "ethan-morales": {
       "title": "Ethan Morales",
       "path": "content/ethan-morales.md",
@@ -12,23 +28,9 @@
       "path": "content/giselle-iridao.md",
       "parent": "tboah-characters"
     },
-    "home": {
-      "title": "Home",
-      "path": "content/home.md",
-      "parent": "geh"
-    },
-    "404": {
-      "title": "404",
-      "path": "assets/404.md",
-      "parent": "geh"
-    },
+
     "librarium": {
-      "title": "Librarium Sanctum",
-      "path": "content/librarium.md",
-      "parent": ""
-    },
-    "tboah": {
-      "title": "Librarium Sanctum",
+      "title": "Librarium",
       "path": "content/librarium.md",
       "parent": ""
     }

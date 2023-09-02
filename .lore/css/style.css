@@ -335,7 +335,7 @@ summary {
   line-height: 20px;
   overflow: auto;
   transition: 0.5s linear;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.11), 0 2px 2px rgba(0, 0, 0, 0.11), 0 4px 4px rgba(0, 0, 0, 0.11), 0 8px 8px rgba(0, 0, 0, 0.11), 0 16px 16px rgba(0, 0, 0, 0.11), 0 32px 32px rgba(0, 0, 0, 0.11);
 }
 .card blockquote {
   font-style: italic;
@@ -348,6 +348,7 @@ summary {
   margin: 0px;
   margin-bottom: 10px;
   font-size: 3em;
+  font-family: Cambria !important;
 }
 
 .card-content {
@@ -415,14 +416,14 @@ summary {
     width: 90vw;
     padding: 20px;
   }
-  #title {
-    text-align: center;
-    transition: 0.4s linear;
-  }
 }
 @media screen and (max-width: 500px) {
   .card {
     width: 100vw;
+  }
+  #title {
+    text-align: center;
+    transition: 0.4s linear;
   }
 }
 .profilebox {
@@ -433,6 +434,7 @@ summary {
   border-radius: 10px;
   padding: 8px;
   margin-left: 20px;
+  margin-bottom: 10px;
   background-color: #F5F5F5;
   font-size: 12px;
   transition: 0.5s linear;
@@ -509,13 +511,15 @@ summary {
   .profilebox .profile--image {
     max-height: 500px;
   }
+  .profilebox .category--name {
+    padding: 4px;
+  }
 }
 .searchbox {
   width: 100%;
   border-radius: 4px;
   border: none;
   padding: 5px;
-  margin-right: 5px;
   background-color: #252525;
   color: white;
   font-size: 12px;
@@ -523,6 +527,30 @@ summary {
 }
 .searchbox:focus {
   outline: none;
+}
+
+.searchbox-area {
+  margin-right: 5px;
+}
+
+#suggestions {
+  position: absolute;
+  background-color: #4584FF;
+  width: 62%;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.suggestion-item {
+  padding: 5px;
+  border-top: 2px solid #191919;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.1s ease-in;
+}
+.suggestion-item:hover {
+  border-top: 2px solid #4584FF;
+  background-color: #252525;
 }
 
 .sidebar {
@@ -541,10 +569,6 @@ summary {
   z-index: 999;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   transition: 0.5s ease-in-out;
-}
-.sidebar .nav-links {
-  line-height: 30px;
-  font-family: Rubik Light;
 }
 
 .titles {
@@ -565,15 +589,45 @@ summary {
   text-align: justify;
 }
 
-.button--sidebar .button {
+.nav-links {
+  line-height: 30px;
+  font-family: Rubik Light;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.nav-links .button--showsub {
+  float: right;
+  color: rgba(255, 255, 255, 0.2666666667);
+  transition: 0.2s ease-in-out;
+  transform: scale(1);
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+}
+.nav-links .button--showsub:hover {
+  transform: scale(1.1);
+}
+.nav-links .button--showsub:active {
+  transform: scale(0.9);
+}
+.nav-links .button--mainnav .button {
   background-color: transparent;
   color: white;
   transition: 0.1s linear;
 }
-.button--sidebar .button:hover {
+.nav-links .button--mainnav .button:hover {
   background-color: transparent;
   color: #4584FF;
   transform: scale(1.1);
+}
+.nav-links .button--subnav {
+  font-size: 14px;
+  line-height: 15px;
+  margin-left: 10px;
+}
+.nav-links .button--active .button {
+  color: #4584FF !important;
 }
 
 .close {
@@ -599,10 +653,9 @@ summary {
   transform: scale(0.9);
 }
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1000px) {
   .sidebar {
     left: 10px;
-    top: -1000px;
     background-color: rgba(25, 25, 25, 0.98);
     box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
   }
@@ -617,7 +670,7 @@ summary {
   left: 20px;
   margin-top: 10px;
   margin-right: -5px;
-  padding: 2px 10px;
+  padding: 2px 5px;
   border: none;
   border-radius: 4px;
   background-color: #4584FF;
@@ -733,6 +786,10 @@ summary {
 
 * {
   font-family: Rubik;
+}
+
+*, html {
+  scroll-behavior: smooth !important;
 }
 
 html {

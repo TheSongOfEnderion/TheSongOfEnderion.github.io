@@ -10,26 +10,28 @@
 
   <link rel="stylesheet" href="./.lore/css/style.css">
 
-
-</head>
+  <link rel="icon" href="./assets/favicon.svg">
+</head> 
 
 <body onload="start()">
 
   <div id="app">
-    <Sidebarbtn>≡</Sidebarbtn>
+    <Sidebarbtn>✢</Sidebarbtn>
     <div class="container full">
       
 
       <!-- Sidebar for navigation -->
       <Sidebar :directory="directory"
                :project-title="projectTitle"
-               :project-subtitle="projectSubtitle">
+               :project-subtitle="projectSubtitle"
+               :rerender="rerender">
       </Sidebar>
 
       <!-- Card component - All contents comes here -->
       <Card :title="pageName"
             :content="content"
-            :directory="directory"/>      
+            :directory="directory"
+            :toggle-state="toggleState"/>      
     </div>
   </div>
 

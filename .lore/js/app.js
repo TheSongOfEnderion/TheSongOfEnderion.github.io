@@ -1,12 +1,17 @@
 var root; //
+
+
 var historyList = [];
 var globalPosition = null;
+
 
 function start() { 
   const app = Vue.createApp({
     data() {
       return {
         directory: {},
+        rerender: true,
+        toggleState: false,
 
         // Sidebar
         projectTitle: "",
@@ -25,6 +30,7 @@ function start() {
       // Save key-info
       this.projectTitle = metadata.title;
       this.projectSubtitle = metadata.subtitle;
+      document.getElementsByTagName("title")[0].innerText = this.projectTitle;
 
       // Get Directory
       this.directory = metadata.directory
@@ -39,7 +45,6 @@ function start() {
 
       // Setup forward and backward handler using johanholmerin's code
       window.addEventListener('forward', event => {
-
         if (globalPosition+1 < historyList.length) globalPosition++
         this.reload(historyList[globalPosition], true)
         console.log(event)
@@ -50,6 +55,8 @@ function start() {
         this.reload(historyList[globalPosition], true)
         console.log(event)
       });
+
+      setup()
 
     },
     methods: {
@@ -87,7 +94,12 @@ function start() {
           this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`
         }
         
+        
         // Update App
+        // this.rerender = false;
+        // await Vue.nextTick()
+        // this.rerender = true;
+        
         this.$forceUpdate();
       },
       getCurrentPageId() {
@@ -101,3 +113,20 @@ function start() {
 
 }
 
+
+function setup() {
+
+  // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/
+  window.scroll({
+    top: 2500, 
+    left: 0, 
+    behavior: 'smooth'
+  });
+  
+  // Scroll certain amounts from current position 
+  window.scrollBy({ 
+    top: 100, // could be negative value
+    left: 0, 
+    behavior: 'smooth' 
+  });
+}

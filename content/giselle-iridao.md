@@ -1,5 +1,5 @@
 
-========================================================
+=============================
 Title: Giselle Iridao
 Image:
   Uniform: assets/images/e-class/giselle/giselle-official-art.png
@@ -33,7 +33,7 @@ Content:
     Family:
     - Anabelle Iridao (Mother)
     - Rommuel Iridao (Father)
-========================================================
+=============================
 
 Giselle is one of the Deuteragonist of the story [[tboah]] and a member of E-Class.
 
@@ -60,3 +60,5 @@ Her insanity manifested in the joy she receives whenever she activates buttons, 
 
 ## Passive
 * **Frost Immunity** - Giselle is immune to practically all conventional Ice or Frost attacks. She is capable of handling temperatures even at absolute zero without any repercussions. Her weaker attack power is off-set by her immunity, which is one of the strongest resistance power in the current era.
+
+

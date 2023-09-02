@@ -1,4 +1,4 @@
-===default===
+
 The Librarium Sanctum is a sacred Library maintained by the [[Bloom Lotus Company]], consisting of thousands of years of Knowledge.
 
 [[toc]]

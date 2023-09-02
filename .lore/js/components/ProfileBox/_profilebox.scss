@@ -17,6 +17,7 @@ $profile--width: 250px;
   border-radius: 10px;
   padding: 8px;
   margin-left: 20px;
+  margin-bottom: 10px;
 
   // Element
   background-color: $grey;
@@ -119,6 +120,9 @@ $profile--width: 250px;
 
     .profile--image {
       max-height: 500px;
+    }
+    .category--name {
+      padding: 4px;
     }
   }
 }

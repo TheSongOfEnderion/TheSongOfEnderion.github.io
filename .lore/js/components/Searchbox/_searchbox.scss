@@ -6,7 +6,7 @@
   border-radius: 4px;
   border: none;
   padding: 5px;
-  margin-right: 5px;
+  
   
 
   // Element
@@ -19,3 +19,33 @@
     outline: none;
   }
 }
+
+.searchbox-area {
+  margin-right: 5px;
+}
+
+#suggestions {
+  position: absolute;
+  background-color: $blue;
+  width: 62%;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.suggestion-item {
+  // position: absolute;
+  padding: 5px;
+  border-top: 2px solid $black;
+
+  font-size: 13px;
+
+  cursor: pointer;
+  transition: 0.1s ease-in;
+  &:hover {
+    // transform: scale(1.2);
+    // outline: 3px solid white;
+    border-top: 2px solid $blue;
+    background-color: $dark;
+  }
+  
+} 
