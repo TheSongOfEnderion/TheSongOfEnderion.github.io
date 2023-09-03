@@ -14,9 +14,12 @@
   border-radius: $gb-border-radius; 
     
   // Element
-  background-color: white; 
+  // background-color: white; 
+  background: rgb(255,255,255);
+  background: linear-gradient(124deg, rgba(255,255,255,1) 0%, rgba(237,237,237,1) 100%);
+
   color: #252525;
-  font-size: 13px;
+  font-size: 13px; 
   font-family: Rubik Light; 
   line-height: 20px;
   
@@ -34,18 +37,22 @@
     margin-left: 10px;
 
   }
+  p {
+    margin: 0px !important;
+    margin-bottom: 10px !important;
+  }
+  .button {
+    margin: 0px !important;
+  }
 }  
 
 #title  {
-  margin: 0px;
+  margin: 0px; 
   margin-bottom: 10px;
-  font-size: 3em;
+  font-size: 2.5em;
   font-family: Cambria !important;
-}
-
-.card-content {
-  font-family: Rubik Light !important;
-}
+} 
+ 
 
 .toc {
   // Block

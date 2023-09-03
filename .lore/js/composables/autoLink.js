@@ -37,7 +37,7 @@ function autoLink(value, directory) {
     // If normal [[name]]
     matches.push({
       title: match[1].trim(),
-      pageId: match[1].trim().toLowerCase().replace(" ", "-"),
+      pageId: match[1].trim().toLowerCase().replace(/\s/gm, "-"),
       original_string: match[1].trim(),
       is_custom: false,
     });

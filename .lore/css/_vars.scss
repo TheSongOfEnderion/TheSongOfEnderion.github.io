@@ -22,3 +22,7 @@ $gb-border-radius: 20px;
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
+@mixin fancy-blue {
+  background: rgb(69,132,255);
+  background: linear-gradient(146deg, rgba(69,132,255,1) 0%, rgba(5,79,222,1) 100%);
+}

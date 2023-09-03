@@ -1,0 +1,3 @@
+Mina is a cheerful girl with Superspeed power. However, her power has a fatal flaw of burning her to death should she exceed past her limits. In theory, she can go to the speed of sound but she only goes about 1/4 of it at max because doing so will literally kill her.
+
+Because of the high energy she burns, Mina grew up as a heavy eater but hardly ever gets any fats. Her superspeed also made her almost unbeatable by her peers, but her first defeat came at the hands of [[ethan-morales | Ethan]]. Ethan defeated her by surrounding her with hydrogen gas and when she speed up, the friction igniting it causing a massive explosion that knocked her unconscious.

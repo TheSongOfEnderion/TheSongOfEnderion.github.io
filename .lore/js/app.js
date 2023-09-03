@@ -60,46 +60,41 @@ function start() {
 
     },
     methods: {
-      async reload(pageId, isPopState=false) {
-        // Prevents repeated history when same page button is clicked
-        if (isPopState == false && pageId == historyList[globalPosition]) return
+      async reload(pageId, isPopState = false) {
+        // Prevents repeated history when the same page button is clicked
+        if (!isPopState && pageId === historyList[globalPosition]) return;
+      
         // Deal with Global Positioning
-        if (globalPosition == null) globalPosition = 0
-        else if(!isPopState) globalPosition += 1
-        
+        if (globalPosition === null) globalPosition = 0;
+        else if (!isPopState) globalPosition += 1;
+      
         // Clear history before the latest new page
-        if (isPopState == false && globalPosition >= 0 && globalPosition < historyList.length) {
-          // console.log("before: ", isPopState, historyList, globalPosition);
-          historyList.length = globalPosition
-          // console.log("after: ", isPopState, historyList, globalPosition);
+        if (!isPopState && globalPosition >= 0 && globalPosition < historyList.length) {
+          historyList.length = globalPosition;
         }
-
-        if (isPopState == false) historyList.push(pageId)
-        // console.log("gistory: ", historyList, globalPosition, pageId)
-         
-
-        // Get metadata file 
-        let isError = false
-        let pageMeta = this.directory[pageId];
-        if (!this.directory.hasOwnProperty(pageId)) {
-          pageMeta = this.directory["404"];
-          isError = true;
-        }
-
+      
+        if (!isPopState) historyList.push(pageId);
+      
+        // Get metadata file
+        let isError = false;
+        let pageMeta = this.directory[pageId] || this.directory["404"];
+        if (!this.directory.hasOwnProperty(pageId)) isError = true;
+      
         // Update Card Content
-        this.content = await (await fetch(pageMeta.path)).text() 
-        this.pageName = pageMeta.title
-
-        if (isError == true) {
-          this.content = this.content + `\n\nPage <span class="error">${pageId}</span> does not exist.`
+        const resp = await fetch(pageMeta.path);
+        this.pageName = pageMeta.title;
+      
+        if (resp.status === 404) {
+          this.content = `File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`;
+        } else {
+          this.content = (await resp.text()).trim() || "The Page is empty";
         }
-        
-        
+      
+        if (isError) {
+          this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
+        }
+      
         // Update App
-        // this.rerender = false;
-        // await Vue.nextTick()
-        // this.rerender = true;
-        
         this.$forceUpdate();
       },
       getCurrentPageId() {
@@ -115,7 +110,6 @@ function start() {
 
 
 function setup() {
-
   // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/
   window.scroll({
     top: 2500, 

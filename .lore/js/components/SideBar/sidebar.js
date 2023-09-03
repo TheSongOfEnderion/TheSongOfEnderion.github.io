@@ -39,7 +39,7 @@ const sidebar = {
           
           // if has subnav
           if (newnav.startsWith("- ")) {
-            this.navs[lastNav]['subnav'][newnav] = autoLink(nav, this.directory)
+            this.navs[lastNav]['subnav'][newnav] = autoLink(nav.replace(/\-\s/, ''), this.directory)
             continue
           }
           
@@ -59,10 +59,22 @@ const sidebar = {
       document.getElementById("sidebaropen").style.display = "block";
     },
     toggleSubNav(navid) {
-      document.getElementById(navid).classList.toggle("hide")
+      document.getElementById(navid).classList.toggle("hide-subnav")
     },
     getNameClean(name) {
       return name.replace(/\[/g, "").replace(/\]/g, "").trim().toLowerCase()
+    },
+    expand(navId) {
+      const subnav = document.getElementById(navId)
+      if (subnav) {
+        subnav.classList.remove("hide-subnav")
+      }
+    },
+    collapse(navId) {
+      const subnav = document.getElementById(navId)
+      if (subnav) {
+        subnav.classList.add("hide-subnav")
+      }
     }
   },
   template: `
@@ -86,7 +98,10 @@ const sidebar = {
           
           <!-- Main Button -->
           <span v-html="value.main"
-                :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"></span> 
+                :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"
+                @mouseover="expand(name + '-navid')"
+                
+                ></span> 
           <button v-if="Object.keys(value.subnav).length != 0"
                   class="button button--showsub" 
                   @click="toggleSubNav(name + '-navid')">
@@ -95,8 +110,9 @@ const sidebar = {
           
           <!-- Sub button -->
           <div v-if="Object.keys(value.subnav).length != 0"
-               class="button--subnav hide"
-               :id="name + '-navid'">
+               class="button--subnav hide-subnav"
+               :id="name + '-navid'"
+               @mouseleave="collapse(name + '-navid')">
 
             <template v-for="(valuesub, namesub, indexsub) in value.subnav">
               <span v-html="valuesub" class="button--mainnav"></span> 

@@ -1,16 +1,11 @@
 [[Home]]
-
 [[Story]]
-- [[tboa]]
+- [[tboah]]
 - [[eotoq]]
-
 [[Characters]]
-
 [[Lore]]
-
 [[Librarium]]
 - [[history]]
-
+- [[Ethan morales]]
 [[About]]
-
 [[Ethan Morales]]
