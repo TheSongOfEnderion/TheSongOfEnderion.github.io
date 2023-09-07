@@ -144,6 +144,8 @@ Because Ethan is a Ranker, he awakened many different forms of his ability.
 * [[Eltia Axolin]]
 
 
+
+
 ----------------------------------------------------------------------
 
 =============================

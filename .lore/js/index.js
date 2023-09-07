@@ -20,7 +20,8 @@ function start() {
         
         // Card
         content: "",
-        pageName: ""
+        pageName: "",
+        pageId: "",
 
       }
     },
@@ -38,8 +39,6 @@ function start() {
       
       // Get query id
       let pageId = this.getCurrentPageId();
-      if (pageId == null || pageId == "") pageId = "home"
-      if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
 
       // Loads page
       this.reload(pageId)
@@ -61,10 +60,14 @@ function start() {
 
     },
     methods: {
-      async reload(pageId, isPopState = false) {
+      async reload(pageId, isPopState = false, savePage="") {
+
+       
         // Prevents repeated history when the same page button is clicked
-        if (!isPopState && pageId === historyList[globalPosition]) return;
-      
+        if (savePage == "") {
+          if (!isPopState && pageId === historyList[globalPosition]) return;
+        }
+                
         // Deal with Global Positioning
         if (globalPosition === null) globalPosition = 0;
         else if (!isPopState) globalPosition += 1;
@@ -80,32 +83,47 @@ function start() {
         let isError = false;
         let pageMeta = this.directory[pageId] || this.directory["404"];
         if (!this.directory.hasOwnProperty(pageId)) isError = true;
-      
-        // Update Card Content
-        const resp = await fetch(pageMeta.path);
+        
         this.pageName = pageMeta.title;
-      
-        if (resp.status === 404) {
-          this.content = `File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`;
+
+        // Update Card Content
+        if (savePage == "") {
+          const resp = await fetch(pageMeta.path);
+          
+        
+          if (resp.status === 404) {
+            this.content = `File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`;
+          } else {
+            this.content = (await resp.text()).trim() || "The Page is empty";
+          }
+        
+          if (isError) {
+            this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
+          }
+
         } else {
-          this.content = (await resp.text()).trim() || "The Page is empty";
+          this.content = savePage.trim()
         }
-      
-        if (isError) {
-          this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
-        }
+
+        this.pageId = pageId
       
         // Update App
         this.$forceUpdate();
       },
       getCurrentPageId() {
-        return (new URLSearchParams(window.location.search)).get('p');
+        let pageId = (new URLSearchParams(window.location.search)).get('p');
+        if (pageId == null || pageId == "") pageId = "home"
+        if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
+        return pageId
+      },
+      savePage(newPage) {
+        this.reload(this.getCurrentPageId(), false, newPage)
       }
     }
   })
 
-  root = mount(app)
-
+  root = mount(app) 
+ 
 
 }
 
@@ -131,6 +149,8 @@ function mount(app) {
   const components = [
     breadcrumbs,
     card,
+    editbar,
+    editor,
     modal,
     profilebox,
     searchbox,
@@ -249,29 +269,6 @@ function autoLink(value, directory) {
   //   }
   // }
 
-function autoSpoil(value) {
-
-  const spoilers = value.match(/\[\[spoiler\]\]([\S\s]*?)\[\[\/spoiler\]\]/gm)
-
-  for (let index in spoilers) {
-    const spoiler = spoilers[index]
-
-    // console.log(spoiler)
-
-    value = value.replace(spoiler, 
-      "<span class=\"spoilers\">" + 
-      spoiler
-        .replace("[[spoiler]]", "")
-        .replace("[[/spoiler]]", "")
-        .trim() 
-        + "</span>")
-    // console.log(value)
-  }
-  
-
-  return value
-}
-
 function changePage(pageId) {
   
   const url = new URL(window.location);  
@@ -281,6 +278,10 @@ function changePage(pageId) {
   
   // Reload vue page
   root.reload(pageId)
+}
+
+function copyobj(obj) {
+  return JSON.parse(JSON.stringify(obj)) 
 }
 
 var globalIdList = []
@@ -367,6 +368,11 @@ history.pushState = modifyStateFunction(pushState, 1);
 history.replaceState = modifyStateFunction(replaceState, 0);
 window.addEventListener('popstate', onPopstate);
 
+function splitStringAtLast(inputString, delimiter) {
+  const lastIndex = inputString.lastIndexOf(delimiter);
+  return lastIndex === -1 ? [inputString] : [inputString.slice(0, lastIndex), inputString.slice(lastIndex + delimiter.length)];
+}
+
 
 
 
@@ -376,9 +382,51 @@ window.addEventListener('popstate', onPopstate);
 // ==================
 const breadcrumbs = {
   name: "BreadCrumbs",
+  data() {
+    return {
+      crumbs: []
+    }
+  },
+  props: {
+    directory: { type: Object, required: true },
+    pageId: { type: String }
+  },
+  watch: {
+    pageId: {
+      handler(value) {
+        
+        const parent = this.directory[this.pageId].parent 
+        
+        let crumbs = []
+        const search = (page) => {
+          if (!this.directory.hasOwnProperty(page)) return
+          crumbs.unshift(page)
+          
+          const entry = this.directory[page].parent.trim()
+          if (entry == "") return
+          search(entry)
+        }
+
+        search(parent)
+        
+        crumbs.push(this.pageId)
+        
+        this.crumbs = crumbs
+      }
+    }
+  },
+  methods: {
+    link(value) {
+      return autoLink(`[[${value}]]`, this.directory)
+      
+    }
+  },
   template: `
   <div class="breadcrumbs">
-    Story > The Birth of a Hero > Characters > Ethan Morales
+    <template v-for="(value, index) in crumbs">
+      <span v-html="link(value)"></span>
+       <template v-if="index + 1 != crumbs.length"> » </template>
+    </template>
   </div>
   `
 }
@@ -389,7 +437,7 @@ const card = {
     return {
       // Card Data
       areas: {
-        spoiler: {
+        full: {
           tabs: {},
           profile: {}
         },
@@ -405,11 +453,13 @@ const card = {
 
       // Divisors
       profileDivisor: "=============================",
-      spoilerDivisor: "----------------------------------------------------------------------",
+      fullDivisor: "----------------------------------------------------------------------",
     }
   },
+  emits: ['processed-content'],
   props: {
     title: { type: String, default: "Ethan Morales" },
+    pageId: { type: String },
     content: { type: String },
     directory: { type: Object, required: true },
     toggleState: { type: Boolean }
@@ -418,6 +468,7 @@ const card = {
   watch: {
     content: {
       immediate: true,
+      deep: true,
       async handler(value) {      
         // Return if value is empty
         if (value == '') return  
@@ -426,7 +477,7 @@ const card = {
         this.profile = {}
 
         // Start
-        const [spoilerContents, previewContent] = value.split(this.spoilerDivisor).slice(0, 2);
+        const [fullContents, previewContent] = value.split(this.fullDivisor).slice(0, 2);
 
         // Checks if there is no preview
         if (previewContent == undefined || previewContent.trim().length == 0 ) {
@@ -436,22 +487,28 @@ const card = {
         }
 
         const areas = {
-          'spoiler': spoilerContents.trim(), 
+          'full': fullContents.trim(), 
           'preview': previewContent == undefined ? "" : previewContent.trim()
         }
 
         for (const area in areas) {
-          let [content, profile] = this.loadProfile(areas[area])
+          let [content, profile, profileOriginal] = this.loadProfile(areas[area])
 
           this.areas[area].profile = profile
-          this.areas[area].tabs = this.createContent(content, this.directory)
-        }
+          const [tabs, tabsOriginal] = this.createContent(content, this.directory)
+
+          this.areas[area].tabs = tabs
+          this.areas[area].original = tabsOriginal
+          this.areas[area].profileOriginal = profileOriginal
+        } 
 
         // Refresh
         await this.refresh()
         this.fixQuote()
         this.makeTOC()
         this.toggleArea()
+
+        this.$emit('processed-content', this.areas)
       }
     },
     toggleState: {
@@ -464,26 +521,24 @@ const card = {
   methods: {
     createContent(value, directory) {
 
-      const results = {};
+      let results = {};
+      let original = {}
       const regex = /===(?!.*===)([^=]+)===/
-
       if (regex.test(value)) {
-        // Split text by "===", remove empty sections
-        const sections = value.split("===").filter(section => section.trim() !== ""); 
-      
-        // Loop through sections by index, incrementing by  2 to pair headers and content
-        for (let i = 0; i < sections.length; i += 2) {
-          // Get the section header and convert to lowercase
-          const key = sections[i].trim(); 
-          // Get the section content
-          const value = sections[i + 1].trim(); 
-          // Assign the section header as a key and content as the corresponding value in the object
-          results[key] = value; 
+
+        let raw = value.split(/===(.+?)===/gm)
+        raw.shift()
+        for (let i=0; i < raw.length; i+=2) {
+          const tabname = raw[i]
+          const content = raw[i+1]
+    
+          results[tabname] = content; 
         }
         
         // Parse data
         for (const name in results) {
           // Convert md into html
+          original[name] = results[name].trim()
           results[name] = results[name].replace(/\n/gm, "\n\n")
           results[name] = marked.parse(results[name]);
 
@@ -494,30 +549,32 @@ const card = {
         }
       } else {
         // if there is no tabs
+        original["default"] = value.trim()
         results["default"] = marked.parse(value.replace(/\n/gm, "\n\n"));
         results["default"] = autoLink(results["default"], directory)
       }
-      return results;
+      return [results, original];
     },
     loadProfile(value) {
-      if (!this.hasData(value)) return [value, {}];
+      if (!this.hasData(value)) return [value, {}, ""];
       
       // Separate content and profile
       const parts = value.split(this.profileDivisor);
       
+      const profileText = parts[1].replace(/=/g, "").trim()
       // Load yaml
       let profile = {};
       try {
-        profile = jsyaml.load(autoLink(parts[1].replace(/=/g, "").trim(), this.directory), 'utf8');
+        profile = jsyaml.load(autoLink(profileText, this.directory), 'utf8');
       } catch (error) {
-        console.log("Bad YAML Data on .md file");
+        conesole.log("Bad YAML Data on .md file");
         return [value, {}];
       }
       
       // Load content
       const content = parts[2].trim();
     
-      return [content, profile];
+      return [content, profile, profileText];
    },
     makeTOC() {
       const tabs = document.getElementsByClassName("tab")
@@ -569,14 +626,14 @@ const card = {
       return Object.keys(this.areas[area].profile).length != 0
     },
     toggleArea() {
-      const spoilerArea = document.getElementById("spoiler-area");
+      const fullArea = document.getElementById("full-area");
       const previewArea = document.getElementById("preview-area");
       
       if (this.noPreview || this.toggleState) {
-        spoilerArea.classList.remove("hide");
+        fullArea.classList.remove("hide");
         previewArea.classList.add("hide");
       } else {
-        spoilerArea.classList.add("hide");
+        fullArea.classList.add("hide");
         previewArea.classList.remove("hide");
       }
     }
@@ -588,7 +645,7 @@ const card = {
       </h1>
       
       <div class="card">
-        <BreadCrumbs/>
+        <BreadCrumbs :directory="directory" :page-id="pageId"/>
 
         <div v-for="(area, name, index) in areas"
              v-if="rerender"
@@ -604,6 +661,319 @@ const card = {
       </div>
     </div>
   ` 
+}
+
+const editbar = {
+  name: "Editbar",
+  props: {},
+  methods: {
+    open() {
+      document.getElementById("editor-box").classList.remove("hide")
+    }
+  },
+  template: `
+    <div class="editbar">
+      <h1>Edit Mode</h1>
+
+      <div class="buttons">
+        <button class="button--edit" @click="open">Edit Page</button>
+        <button class="button--edit">Add Page</button>
+        <button class="button--edit button--edit-red">Delete Page</button>
+      </div>
+
+      
+
+    </div>
+  `
+}
+
+const editor = {
+  name: "Editor",
+  data() {
+    return {
+      pageData: {},
+      pathChoices: [],
+
+      
+      // Check to see if profile is currently edited
+      isCurrentProfile: false,
+
+      // area obj
+      currentArea: "",
+      currentTab: "",
+      currentAreaObj: {}
+
+
+    }
+  },
+  components: ['EditorTab'],
+  emits: ['save-page'],
+  props: {
+    directory: { type: Object, required: true }
+  },
+  methods: {
+    start(value){
+      this.pageData = copyobj(value)
+      this.changeArea('full')
+    },
+    changeArea(area) {
+      // Set initial variables
+      this.isCurrentProfile = false
+      this.currentArea = area
+      this.currentTab = Object.keys(this.pageData[area].original)[0]
+      this.currentAreaObj = copyobj(this.pageData[area])
+
+      // Set <Tabs btn active>
+      for (const ar of ['full', 'preview']) {
+        if (ar == area) this.getNode(`btn-${ar}`).classList.add("btn-active")
+        else this.getNode(`btn-${ar}`).classList.remove("btn-active")
+      }
+
+      // Create path directory
+      const paths = [];
+      for (const entryId in this.directory) {
+        const entry = splitStringAtLast(this.directory[entryId].path, '/')[0]
+        if (!paths.includes(entry)) paths.push(entry)
+      }
+      this.pathChoices = paths.sort()
+
+      // Remove active status of btn-profile
+      this.getNode("btn-profile").classList.remove("btn-active")
+
+      // Set <textarea>
+      this.refreshTextArea()
+    },
+    changeTab(event) {
+      // Save the last area
+      this.isCurrentProfile = false
+      const newTab = event.currentTarget.value
+      this.currentTab = newTab
+
+      this.refreshTextArea()
+    },
+    refreshTextArea(){
+      this.getNode("textarea").value = `${this.currentAreaObj.original[this.currentTab]}`
+    },
+    editProfile() {
+      if (this.isCurrentProfile == false) {
+        this.isCurrentProfile = true
+        this.getNode("textarea").value = `${this.currentAreaObj.profileOriginal}`
+        this.getNode("btn-profile").classList.add("btn-active")
+      } else {
+        this.isCurrentProfile = false 
+        this.refreshTextArea()
+        this.getNode("btn-profile").classList.remove("btn-active")
+      }
+    },
+    saveTextArea(event) {
+      if (this.isCurrentProfile == false) {
+        this.pageData[this.currentArea].original[this.currentTab] = event.currentTarget.value
+        this.currentAreaObj.original[this.currentTab] = event.currentTarget.value
+      } else {
+        this.pageData[this.currentArea].profileOriginal = event.currentTarget.value
+        this.currentAreaObj.profileOriginal = event.currentTarget.value
+      }
+    },
+    save() {
+      let newPage = ""
+      // Check if preview is empty
+      const previewKeys = Object.keys(this.pageData['preview'].original)
+      const noPreview = (previewKeys.length == 1 &&
+                         previewKeys[0] == 'default' &&
+                         this.pageData['preview'].original['default'].trim() == "")
+                         ? true : false
+      
+      // Process full and preview area
+      for (const area of ['full', 'preview']) {
+
+        // Checks profile
+        const profile = this.pageData[area].profileOriginal.trim()
+        if (profile.trim() != "") newPage += `=============================\n${profile}\n=============================\n`
+        
+        // Process tabs
+        const tabCount = Object.keys(this.pageData[area].original).length
+        for (const tabname in this.pageData[area].original) {
+          const tab = this.pageData[area].original[tabname]
+          
+          if (tabCount === 1) newPage += `${tab}\n` 
+          else newPage += `===${tabname}===\n${tab}\n\n`
+        }
+
+        // Checks if there's a preview
+        if (area == 'full' && noPreview == false) newPage += '\n----------------------------------------------------------------------\n'
+      } 
+
+      // emits saved page
+      this.$emit('save-page', newPage)
+    },
+    tabNew() {
+      // Checks if new tab name is empty
+      const tabname = this.getNode('tab-new-input').value.trim()
+      if (tabname === "") return
+
+      // Checks if tabname exists already
+      const tabs = Object.keys(this.currentAreaObj.original)
+      if (tabs.includes(tabname)) return
+
+      // Adds new tabname
+      this.pageData[this.currentArea].original[tabname] = ""
+      
+      // Refresh
+      this.changeArea(this.currentArea)
+
+      // hide new tab
+      this.getNode('tab-new').classList.toggle('hide')
+      
+      this.getNode(`tab-new-btn`).classList.remove("btn-active")
+    },
+    tabRename() {
+      // Checks if renamed tab is empty
+      const tabname = this.getNode('tab-rename-input').value.trim()
+      if (tabname === "") return
+
+      // Checks if tabname exists already
+      const tabs = Object.keys(this.currentAreaObj.original)
+      if (tabs.includes(tabname)) return
+
+      // Save current tab
+      this.pageData[this.currentArea].original[tabname] = `${this.pageData[this.currentArea].original[this.currentTab]}`
+      
+      // Delete tab
+      delete this.pageData[this.currentArea].original[this.currentTab]
+
+      // Refresh
+      this.changeArea(this.currentArea)
+
+      // Hide rename tab
+      this.getNode('tab-rename').classList.toggle('hide')
+
+      this.getNode(`tab-rename-btn`).classList.remove("btn-active")
+    },
+    openTabbtn(id) {
+      this.getNode(`tab-${id}-btn`).classList.toggle("btn-active")
+      this.getNode(`tab-${id}`).classList.toggle('hide')
+    },
+    closeTabbtn(id) {
+      this.getNode(`tab-${id}-btn`).classList.remove("btn-active")
+      this.getNode(`tab-${id}`).classList.add('hide')
+    },
+    exit() {
+      this.getNode("editor-box").classList.add("hide")
+    },
+    getNode(id) {
+      return document.getElementById(id)
+    }
+  },
+  template: `
+  <div id="editor-box" class="editor-container hide">
+    <div id="editor" class="flex">      
+      <!-- Text Input Area -->
+      <div class="textbox">
+        <h1>Editor</h1>
+        <!-- Path selector -->
+        <div class="path-select flex width-100 flex-align">
+            <label>Path: </label>
+            <div class="width-100">
+              <input type="text" name="example" list="path-choices" 
+                     class="input width-100"
+                     placeholder="/">
+              <datalist id="path-choices">
+                <option :value="value" v-for="(value, index) in pathChoices">
+                </option>
+                
+              </datalist>
+            </div>
+        </div>
+        <!-- Textarea -->
+        <textarea name="background-color: white;" id="textarea"
+                  placeholder="Write here..."
+                  @change="saveTextArea"></textarea>      
+      </div>
+
+      <!-- Settings -->
+      <div class="editor-options flex flex-c pos-relative">
+
+        <!-- Mode buttons -->
+        <span class="flex">
+          <!-- <label>Mode</label> -->
+          <button class="btn btn-active" id="btn-full" @click="changeArea('full')">Full</button>
+          <button class="btn" id="btn-preview" @click="changeArea('preview')">Preview</button>
+        </span>
+
+        <button class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
+
+        <!-- Select Tab -->
+        <div class="tab-options flex flex-c mt-15">
+          <label>Tabs</label>
+          <!-- Dropdown -->
+          <select id="tab-select" @change="changeTab" v-if="currentAreaObj">
+              <option :value="name" v-for="(value, name) in currentAreaObj.original">
+                {{ name }}
+              </option>
+          </select>
+
+          <!-- Edit -->
+          <span class="flex">
+            <button class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
+            <button class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
+          </span>
+          <button class="btn">Delete</button>
+        </div>
+
+        <!-- Tags -->
+        <div class="flex flex-c mt-15">
+          <label>Tags</label>
+          <input type="text" id="tags-input" class="input width-100"
+                 placeholder="tagA tagB tagC">
+        </div>
+
+        <!-- Parent -->
+        <div class="flex flex-c mt-15">
+          <label>Parent</label>
+          <input type="text" id="parent-input" class="input width-100"
+                 placeholder="home">
+        </div>
+
+
+   
+        <!-- Tab:New -->
+        <div class="flex flex-c mt-15 boxes hide" id="tab-new">
+          <label>New Tab</label>
+          <input type="text" id="tab-new-input" class="input width-100"
+                 placeholder="home">
+
+          <div class="flex">
+            <button class="btn" @click="tabNew">Ok</button>
+            <button class="btn" @click="closeTabbtn('new')">Cancel</button>
+          </div>
+        </div>       
+
+
+        <!-- Tab:Rename -->
+        <div class="flex flex-c mt-15 boxes hide" id="tab-rename">
+          <label>Rename Tab</label>
+          <input type="text" id="tab-rename-input" class="input width-100"
+                 placeholder="home">
+
+          <div class="flex">
+            <button class="btn" @click="tabRename">Ok</button>
+            <button class="btn" @click="closeTabbtn('rename')">Cancel</button>
+          </div>
+        </div>       
+
+
+
+        <div class="flex float-bottom width-100">
+          <button class="btn btn-green" @click="save">Save</button>
+          <button class="btn btn-red" @click="exit">Exit</button>
+        </div>
+      </div>
+      <!-- Settings -->
+    
+    </div> 
+
+  </div>
+  `
 }
 
 const modal = {

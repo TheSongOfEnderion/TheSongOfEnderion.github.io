@@ -1,0 +1,47 @@
+@use '../../../css/vars' as *;
+
+.toc {
+  // Block
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+  min-width: 150px;
+  width: fit-content;
+  padding: 10px;
+  border-radius: 5px;
+
+  // Element
+  background-color: $grey;
+
+  // Misc
+  // @include shadow;
+
+  // Children
+  .toc-title {
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    margin: 0px; 
+
+  }  
+
+  .H2 {
+    margin-left: 1em !important;
+  }
+  
+  .H3 {
+    margin-left: 2em !important;
+  } 
+  
+  .H4 {
+    margin-left: 3em !important;
+  }
+  
+  .H5 {
+    margin-left: 4em !important;
+  }
+  
+  .H6 {
+    margin-left: 5em !important;
+  }
+} 

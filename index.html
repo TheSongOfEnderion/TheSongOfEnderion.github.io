@@ -16,6 +16,7 @@
 <body onload="start()">
 
   <div id="app">
+    <Editor ref="editor" :directory="directory" @save-page="savePage"></Editor>
     <Sidebarbtn>✢</Sidebarbtn>
     <div class="container full">
       
@@ -27,12 +28,22 @@
                :rerender="rerender">
       </Sidebar>
 
+      <!-- Editor bar -->
+      <Editbar class="hide"></Editbar> 
+
       <!-- Card component - All contents comes here -->
       <Card :title="pageName"
             :content="content"
             :directory="directory"
-            :toggle-state="toggleState"/>      
+            :toggle-state="toggleState"
+            :page-id="pageId"
+            @processed-content="(value) => $refs.editor.start(value)"
+            /> 
+
+
     </div>
+
+    
   </div>
 
 

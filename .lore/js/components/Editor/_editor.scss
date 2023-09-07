@@ -1,0 +1,169 @@
+@use '../../../css/vars' as *;
+
+.editor-container {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.36);
+  height: 100%;
+  width: 100%;
+  z-index: 999999999;
+
+  display: grid;
+  place-items:  center;
+}
+
+#editor {
+
+  // Block
+  width: 55vw;
+  height: 750px;
+  padding: 30px;
+  border-radius: $gb-border-radius;
+  gap: 10px;
+
+  // Element
+  background-color: white;
+  color: $black;
+}
+
+.textbox {
+  width: 100%;
+  h1 {
+    margin: 0px;
+    font-weight: 100;
+    color: $blue;
+  }
+}
+
+#textarea {
+  // Block
+  width: 100%;
+  height: 80%;
+  border: none;
+  outline: none;
+  margin-top: 20px;
+  
+  // Element
+  font-size: 13px;
+  line-height: 17px;
+
+  // Misc
+  resize: none;
+
+
+  // Scroll bar
+  &::-webkit-scrollbar {
+    width: 0.5em;
+  }
+   
+  &::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+   
+  &::-webkit-scrollbar-thumb {
+    background-color: $blue;
+
+  }
+}
+
+.boxes {
+  border: 1px solid $dark;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+
+
+
+.editor-options {
+  width: 150px;
+
+  #tab-select {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .tab-options {
+    h1 {
+      margin: 0px;
+      font-size: 15px;
+    }
+  }
+}
+
+.input {
+  outline: none;
+  border: 1px solid $dark;
+  padding: 4px;
+  font-size: 12px;
+  border-radius: 5px;
+}
+
+.mt-15 {
+  margin-top: 15px;
+}
+
+
+.path-select {
+  font-size: 14px;  
+}
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.btn {
+  padding: 5px 10px 5px 10px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+
+  // Element
+  background-color: $blue;
+  color: white;
+
+  // Misc
+  transition: 0.1s linear;
+  user-select: none;
+  cursor: pointer;
+
+  font-weight: 100 !important;
+  font-style: normal;
+  font-size: 14px;
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+  &:active {
+    transform: scale(1);
+  }
+}
+
+.btn-active {
+  background-color: $dark !important;
+}
+
+.btn-green {
+  background-color: #00df07 !important;
+  // color: $black;
+} 
+
+.btn-red {
+  background-color: #ff0000 !important;
+  // color: $black;
+} 
+
+@media screen and (max-width: 1200px) {
+  #editor {
+    width: 90vw;
+  }
+}

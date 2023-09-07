@@ -9,7 +9,7 @@
 
 .card {
   // Block
-  width: 50vw;
+  width: 46vw;
   padding: $gb-padding; 
   border-radius: $gb-border-radius; 
     
@@ -47,72 +47,18 @@
 }  
 
 #title  {
+  // Block
   margin: 0px; 
   margin-bottom: 10px;
-  font-size: 2.5em;
-  font-family: Cambria !important;
-} 
- 
 
-.toc {
-  // Block
-  display: flex;
-  flex-direction: column;
-  max-width: 200px;
-  min-width: 150px;
-  width: fit-content;
-  padding: 10px;
-  border-radius: 5px;
-
-  // Element
-  background-color: $grey;
-
-  // Misc
-  // @include shadow;
-
-  // Children
-  .toc-title {
-    font-weight: bold;
-    font-size: 14px;
-    text-align: center;
-    margin: 0px; 
-
-  }  
-
-  .H2 {
-    margin-left: 1em;
-  }
-  
-  .H3 {
-    margin-left: 2em;
-  } 
-  
-  .H4 {
-    margin-left: 3em;
-  }
-  
-  .H5 {
-    margin-left: 4em;
-  }
-  
-  .H6 {
-    margin-left: 5em;
-  }
-}
-
-
-
-#title {
   // Element
   color: white;
-  font-family: Rubik Light;
-
+  font-size: 2.3em !important;
+  font-family: Cambria !important;
 }
 
 
 // Media
-
-
 @media screen and (max-width: 1200px) {
   .card {
     width: 60vw;

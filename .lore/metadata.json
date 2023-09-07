@@ -17,6 +17,11 @@
       "path": "assets/404.md",
       "parent": "geh"
     },
+    "new": {
+      "title": "New",
+      "path": "assets/new.md",
+      "parent": "geh"
+    },
 
     "ethan-morales": {
       "title": "Ethan Morales",
@@ -148,7 +153,7 @@
       "path": "content/story/tboah/characters/e-class/jay-baker.md",
       "parent": "tboah-characters"
     },
-    "tie-characterss": {
+    "tie-characters": {
       "title": "New page",
       "path": "content/tie-characterss.md",
       "parent": ""

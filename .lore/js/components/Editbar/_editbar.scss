@@ -1,0 +1,72 @@
+@use '../../../css/vars' as *;
+
+$editbar--bg: transparent;
+
+.editbar {
+  // Block
+  position: fixed;
+  top: 0px;
+  right: 100px;
+  width: 180px;
+  height: 90vh;
+  min-height: 400px;
+  // Box
+  padding: 20px;
+  padding-top: 100px;
+  border-radius: $gb-border-radius;
+  border-top-right-radius: 0px;
+  border-top-left-radius: 0px;
+  
+  // Element
+  background-color: $editbar--bg;
+  color: white;
+  // Misc
+  z-index:  999;
+  transition: 0.5s ease-in-out;
+
+  // Children
+  h1 {
+    font-size: 17px;
+    font-weight: 100;
+  }
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+}
+  
+
+.button--edit {
+  padding: 5px 10px 5px 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+
+  // Element
+  background-color: $blue;
+  color: white;
+
+  // Misc
+  transition: 0.1s linear;
+  user-select: none;
+  cursor: pointer;
+
+  font-weight: 100 !important;
+  font-style: normal;
+  font-size: 14px;
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.button--edit-red {
+  background-color: $red !important;
+}

@@ -19,7 +19,8 @@ function start() {
         
         // Card
         content: "",
-        pageName: ""
+        pageName: "",
+        pageId: "",
 
       }
     },
@@ -37,8 +38,6 @@ function start() {
       
       // Get query id
       let pageId = this.getCurrentPageId();
-      if (pageId == null || pageId == "") pageId = "home"
-      if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
 
       // Loads page
       this.reload(pageId)
@@ -60,10 +59,14 @@ function start() {
 
     },
     methods: {
-      async reload(pageId, isPopState = false) {
+      async reload(pageId, isPopState = false, savePage="") {
+
+       
         // Prevents repeated history when the same page button is clicked
-        if (!isPopState && pageId === historyList[globalPosition]) return;
-      
+        if (savePage == "") {
+          if (!isPopState && pageId === historyList[globalPosition]) return;
+        }
+                
         // Deal with Global Positioning
         if (globalPosition === null) globalPosition = 0;
         else if (!isPopState) globalPosition += 1;
@@ -79,32 +82,47 @@ function start() {
         let isError = false;
         let pageMeta = this.directory[pageId] || this.directory["404"];
         if (!this.directory.hasOwnProperty(pageId)) isError = true;
-      
-        // Update Card Content
-        const resp = await fetch(pageMeta.path);
+        
         this.pageName = pageMeta.title;
-      
-        if (resp.status === 404) {
-          this.content = `File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`;
+
+        // Update Card Content
+        if (savePage == "") {
+          const resp = await fetch(pageMeta.path);
+          
+        
+          if (resp.status === 404) {
+            this.content = `File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`;
+          } else {
+            this.content = (await resp.text()).trim() || "The Page is empty";
+          }
+        
+          if (isError) {
+            this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
+          }
+
         } else {
-          this.content = (await resp.text()).trim() || "The Page is empty";
+          this.content = savePage.trim()
         }
-      
-        if (isError) {
-          this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
-        }
+
+        this.pageId = pageId
       
         // Update App
         this.$forceUpdate();
       },
       getCurrentPageId() {
-        return (new URLSearchParams(window.location.search)).get('p');
+        let pageId = (new URLSearchParams(window.location.search)).get('p');
+        if (pageId == null || pageId == "") pageId = "home"
+        if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
+        return pageId
+      },
+      savePage(newPage) {
+        this.reload(this.getCurrentPageId(), false, newPage)
       }
     }
   })
 
-  root = mount(app)
-
+  root = mount(app) 
+ 
 
 }
 
