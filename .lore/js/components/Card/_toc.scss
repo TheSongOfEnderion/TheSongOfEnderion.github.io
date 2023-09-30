@@ -13,9 +13,6 @@
   // Element
   background-color: $grey;
 
-  // Misc
-  // @include shadow;
-
   // Children
   .toc-title {
     font-weight: bold;
@@ -24,6 +21,7 @@
     margin: 0px; 
 
   }  
+
 
   .H2 {
     margin-left: 1em !important;
@@ -45,3 +43,10 @@
     margin-left: 5em !important;
   }
 } 
+
+
+
+
+#side-toc {
+  width: 250px;
+}

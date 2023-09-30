@@ -4,6 +4,7 @@ $editbar--bg: transparent;
 
 .editbar {
   // Block
+  display: none;
   position: fixed;
   top: 0px;
   right: 100px;

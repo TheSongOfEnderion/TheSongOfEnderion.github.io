@@ -16,9 +16,9 @@
 <body onload="start()">
 
   <div id="app">
-    <Editor ref="editor" :directory="directory" @save-page="savePage"></Editor>
-    <Sidebarbtn>✢</Sidebarbtn>
-    <div class="container full">
+    <!-- <Editor ref="editor" :directory="directory" @save-page="savePage"></Editor> -->
+    
+    <div class="container full" id="top">
       
 
       <!-- Sidebar for navigation -->
@@ -30,7 +30,7 @@
 
       <!-- Editor bar -->
       <Editbar class=""></Editbar> 
-
+      
       <!-- Card component - All contents comes here -->
       <Card :title="pageName"
             :content="content"
@@ -41,6 +41,8 @@
             /> 
 
 
+      
+        
     </div>
 
     
@@ -48,13 +50,8 @@
 
 
   <script src=".lore/js/import/vue.global.js"></script>
-  <script src=".lore/js/import/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.js"></script>
-
-  <!-- <script src="https://unpkg.com/vue@3"></script>
-  <script src="./.lore/js/import/marked.min.js"></script> -->
-
   <script rel="modulepreload" src=".lore/js/index.js"></script>
+  
 </body>
 
 </html>

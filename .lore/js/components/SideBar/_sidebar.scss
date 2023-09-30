@@ -5,24 +5,46 @@ $sidebar--bg: $black;
 .sidebar {
   // Block
   position: fixed;
-  top: 0px;
-  left: 80px;
-  width: 220px;
-  height: 90vh;
+
+
+  height: 100%;
   min-height: 400px;
+  
   // Box
-  padding: 20px;
-  padding-top: 10px;
-  border-radius: $gb-border-radius;
-  border-top-right-radius: 0px;
-  border-top-left-radius: 0px;
+
   // Element
-  background-color: $sidebar--bg;
-  color: white;
+
   // Misc
-  z-index:  999;
-  @include shadow;
-  transition: 0.5s ease-in-out;
+  z-index:  1;
+  // @include shadow;
+
+
+}
+
+.user {
+  margin-left: 40px;
+  padding: 20px;
+  padding-left: 10px;
+  height: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  left: 0px;
+  z-index: -1;
+  background-color: $black;
+  color: white;
+  transition: 0.3s ease-in-out;
+}
+
+.editor-bar {
+  background-color: $dark;
+  height: 100%;
+  width: 40px;
+  padding: 0px;
+  border-right: 1px solid rgba(white, 0.12);
+
+  // justify-content: center;
+  padding-top: 5px;
 }
 
 .titles {
@@ -135,26 +157,31 @@ $sidebar--bg: $black;
 }
 
 
-@media screen and (max-width: 1200px) {
-  .sidebar {
-    left: 10px;
-    top: -5000px; 
-    background-color: rgba($black, 0.98);
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-  }
-  .close {
-    display: block;
-  }
-}
+// @media screen and (max-width: 1200px) {
+//   .sidebar {
+//     left: 10px;
+//     top: -5000px; 
+//     background-color: rgba($black, 0.98);
+//     // box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+//   }
+//   .close {
+//     display: block;
+//   }
+// }
 
 @media screen and (max-width: 900px) {
-
+  .card {
+    margin-left: 0px;
+  }
+  #sidebarobj {
+    left: -500px;
+  }
 }
 
-@media screen and (max-width: 800px) {
+// @media screen and (max-width: 800px) {
 
-}
+// }
  
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 600px) {
 
 }

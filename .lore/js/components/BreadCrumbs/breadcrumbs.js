@@ -13,6 +13,12 @@ const breadcrumbs = {
     pageId: {
       handler(value) {
         
+        try {
+          this.directory[this.pageId].parent 
+        } catch (error) {
+          console.log(`${this.pageId} has no parent ("" is default). page most likely does not exist. check metadata.json`)
+          return
+        }
         const parent = this.directory[this.pageId].parent 
         
         let crumbs = []
@@ -40,11 +46,11 @@ const breadcrumbs = {
     }
   },
   template: `
-  <div class="breadcrumbs">
+  <div class="breadcrumbs" v-if="crumbs.length != 1">
     <template v-for="(value, index) in crumbs">
       <span v-html="link(value)"></span>
        <template v-if="index + 1 != crumbs.length"> » </template>
     </template>
   </div>
   `
-}  
+}   

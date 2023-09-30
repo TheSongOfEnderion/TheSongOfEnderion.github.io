@@ -18,7 +18,7 @@ function start() {
         projectSubtitle: "",
         
         // Card
-        content: "",
+        content: {},
         pageName: "",
         pageId: "",
 
@@ -91,14 +91,15 @@ function start() {
           
         
           if (resp.status === 404) {
-            this.content = `File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`;
+            this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
           } else {
-            this.content = (await resp.text()).trim() || "The Page is empty";
+            this.content = (await resp.json())|| createContentObj("The Page is empty");
+            // console.log(this.content)
           }
-        
-          if (isError) {
-            this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
-          }
+
+          // if (isError) {
+          //   this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
+          // }
 
         } else {
           this.content = savePage.trim()

@@ -4,43 +4,54 @@ $sidebar-btn--color: $blue;
 
 .button--sidebartoggle {
   // Block
-  display: none;
-  position: fixed;
-  bottom: 20px !important;
-  left: 20px;
+  // display: none;
+  // position: fixed;
+  // bottom: 20px !important;
+  // left: 20px;
 
-  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  flex-shrink: 0;
   margin-right: -5px;
   padding: 2px 5px;
   border: none;
   border-radius: 4px;
 
   // Element
-  background-color: $sidebar-btn--color;
+  background-color: transparent;
   color: white;
-  font-size: 2em;
+  font-size: 1.3em;
  
   // Misc
   cursor: pointer;
   z-index: 999;
   transition: 0.1s ease-in-out;
-  @include shadow;
   
   // Effect
   &:hover {
-    background-color: $blue;
     transform: scale(1.1);
-    @include shadow;
+    svg {
+      fill: rgba(white, 0.70);
+    }
   }
   &:active, :focus {
     transform: scale(0.9);
   }
-}
 
-
-
-@media screen and (max-width: 1200px) {
-  .button--sidebartoggle {
-    display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  svg {
+    fill: rgba(white, 0.30);
   }
 }
+
+
+
+// @media screen and (max-width: 1200px) {
+//   .button--sidebartoggle {
+//     display: block;
+//   }
+// }
