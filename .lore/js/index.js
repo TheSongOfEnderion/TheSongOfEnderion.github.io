@@ -114,8 +114,8 @@ function start() {
 
         // Update Card Content
         if (savePage == "") {
-          // const resp = await fetch(pageMeta.path);
-          const resp = await this.fetchData(pageMeta.path);
+          const resp = await fetch(pageMeta.path);
+          // const resp = await this.fetchData(pageMeta.path);
 
           
         
@@ -123,7 +123,7 @@ function start() {
             // this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
             this.content = createContentObj(`Page <span class="error">${pageId}</span> does not exist`);
           } else {
-            this.content = resp || createContentObj("The Page is empty");
+            this.content = (await resp.json()) || createContentObj("The Page is empty");
             // console.log(this.content)
           }
 
