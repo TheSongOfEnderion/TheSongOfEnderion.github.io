@@ -2,8 +2,8 @@ const sidebarbtn = {
   name: "Sidebarbtn",
   data() {
     return {
-      pos: {},
-      card: {},
+      pos: "",
+      card: "",
       lastWidth: 0,
       checked: false,
     }
@@ -12,19 +12,12 @@ const sidebarbtn = {
     openSidebar() {
       
       if (this.pos.style.left == "0px") {
-        this.pos.style.left = "-500px" 
-        this.card.style.marginLeft = "0px"
+        this.sideClose()
       } else {
         this.pos.style.left = "0px"
-
-        if (window.innerWidth > 700) {
-          this.card.style.marginLeft = "calc(300px - 70px)"
-        }
-        
+        if (window.innerWidth > 700) this.card.style.marginLeft = "calc(300px - 70px)"
       }
 
-      console.log(window.innerWidth)
-      // document.getElementById("sidebaropen").style.display = "none";
     },
     sideOpen() {
       this.pos.style.left = "0px"
@@ -36,18 +29,22 @@ const sidebarbtn = {
     },
     isOpen() {
       return this.pos.style.left == "0px"
+    },
+    getElements() {
+      this.pos = document.getElementById("sidebarobj")
+      this.card = document.getElementsByClassName("card")[0]
     }
   },
   mounted() {
-
-    this.pos = document.getElementById("sidebarobj")
-    this.card = document.getElementsByClassName("card")[0]
-
+    this.getElements();
     window.addEventListener('resize', ()=> {
       
       // Negative - Openig to the right
       if (this.lastWidth - window.innerWidth < 0) {
-        
+        // if (this.isOpen() == true) {
+
+        //   return
+        // }
         
         // Positive - Closing to the left
       } else if (this.lastWidth - window.innerWidth > 0) {

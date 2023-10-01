@@ -91,7 +91,8 @@ function start() {
           
         
           if (resp.status === 404) {
-            this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
+            // this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
+            this.content = createContentObj(`Page <span class="error">${pageId}</span> does not exist`);
           } else {
             this.content = (await resp.json())|| createContentObj("The Page is empty");
             // console.log(this.content)
@@ -102,7 +103,8 @@ function start() {
           // }
 
         } else {
-          this.content = savePage.trim()
+          this.content = savePage
+          console.log("this is called")
         }
 
         this.pageId = pageId
@@ -117,6 +119,7 @@ function start() {
         return pageId
       },
       savePage(newPage) {
+
         this.reload(this.getCurrentPageId(), false, newPage)
       }
     }

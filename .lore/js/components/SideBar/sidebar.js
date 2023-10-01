@@ -6,7 +6,7 @@ const sidebar = {
       test: "Asd",
     }
   },
-  components: ['Searchbox', 'Toggle'],
+  components: ['Searchbox', 'Toggle', 'Editbar'],
   computed: {
     isCurrentNav() {
       let pageId = (new URLSearchParams(window.location.search)).get('p')
@@ -75,58 +75,61 @@ const sidebar = {
       if (subnav) {
         subnav.classList.add("hide-subnav")
       }
-    }
+    },
   },
   template: `
   
   <div class="sidebar" >
 
     <div class="editor-bar">
-    <Sidebarbtn></Sidebarbtn>
-    </div>
+      <Sidebarbtn></Sidebarbtn>
+      <SidebarEdit></SidebarEdit>
+    </div> 
 
 
-    <div class="user" id="sidebarobj">
-      <button class="close" @click="closeSidebar">✕</button>
+    <div class="user" id="sidebarobj" style="left: 0px;">
 
-      <!-- Titles section -->
-      <div class="titles">
-        <h1 class="title">{{ projectTitle }}</h1>
-        <h2 class="subtitle">{{ projectSubtitle }}</h2>
-      </div>  
+      <Editbar/>
 
-      <!-- Search Box -->
-      <div class="inputs">
-      <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
-      </div>
-      
-      <!-- Navigation Links -->
-      <div class="nav-links" v-if="rerender">
-        <template v-for="(value, name, index) in navs">
-            
-            <!-- Main Button -->
-            <span v-html="value.main"
-                  :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"
-                  ></span> 
-                  <!-- @mouseover="expand(name + '-navid')" -->
-            <button v-if="Object.keys(value.subnav).length != 0"
-                    class="button button--showsub" 
-                    @click="toggleSubNav(name + '-navid')">
-                    ✢
-            </button><br> 
-            
-            <!-- Sub button -->
-            <div v-if="Object.keys(value.subnav).length != 0"
-                 class="button--subnav hide-subnav"
-                 :id="name + '-navid'">
-                 <!-- @mouseleave="collapse(name + '-navid')" -->
-              <template v-for="(valuesub, namesub, indexsub) in value.subnav">
-                <span v-html="valuesub" class="button--mainnav"></span> 
-                <br>
-              </template>
-            </div>
-
-        </template>
+      <div id="navigation">
+        <button class="close" @click="closeSidebar">✕</button>
+        <!-- Titles section -->
+        <div class="titles">
+          <h1 class="title">{{ projectTitle }}</h1>
+          <h2 class="subtitle">{{ projectSubtitle }}</h2>
+        </div>
+        <!-- Search Box -->
+        <div class="inputs">
+        <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="nav-links" v-if="rerender">
+          <template v-for="(value, name, index) in navs">
+        
+              <!-- Main Button -->
+              <span v-html="value.main"
+                    :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"
+                    ></span>
+                    <!-- @mouseover="expand(name + '-navid')" -->
+              <button v-if="Object.keys(value.subnav).length != 0"
+                      class="button button--showsub"
+                      @click="toggleSubNav(name + '-navid')">
+                      ✢
+              </button><br>
+        
+              <!-- Sub button -->
+              <div v-if="Object.keys(value.subnav).length != 0"
+                   class="button--subnav hide-subnav"
+                   :id="name + '-navid'">
+                   <!-- @mouseleave="collapse(name + '-navid')" -->
+                <template v-for="(valuesub, namesub, indexsub) in value.subnav">
+                  <span v-html="valuesub" class="button--mainnav"></span>
+                  <br>
+                </template>
+              </div>
+          </template>
+        </div>
       </div>
     </div>
 

@@ -36,10 +36,21 @@ const card = {
         // Return if value is empty
         if (isObjEmpty(value)) return  
         
+        // Unnecessarily complcated preview removal.        Massive SKILL ISSUE lmao it works
         let areas = copyobj(value['areas'])
+        if (areas.hasOwnProperty("preview")) {
+          const length = Object.keys(areas["preview"].tabs).length
+          if (length == 1) {
+            const tabName = Object.keys(areas["preview"].tabs)[0]
+            if (areas["preview"].tabs[tabName].trim().length == 0) {
+              delete areas["preview"]
+            }
+          } else if (length == 0) {
+            delete areas["preview"]
+          }
 
-        
-        console.log(areas)
+        }
+
         for (const area in areas) {
           for (const tab in areas[area].tabs) {
             
@@ -55,7 +66,6 @@ const card = {
           }
         }
         this.areas = areas
-        console.log(this.areas)
 
         // Refresh
         await this.refresh()
@@ -63,7 +73,7 @@ const card = {
         this.makeTOC()
         this.toggleArea()
 
-        // this.$emit('processed-content', this.areas)
+        this.$emit('processed-content', value)
       }
     },
     toggleState: {

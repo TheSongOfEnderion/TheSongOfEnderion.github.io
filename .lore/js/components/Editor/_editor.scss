@@ -12,12 +12,12 @@
 }
 
 #editor {
-
+  
   // Block
   width: 55vw;
   height: 750px;
   padding: 30px;
-  border-radius: $gb-border-radius;
+  // border-radius: $gb-border-radius;
   gap: 10px;
 
   // Element
@@ -152,14 +152,14 @@
   background-color: $dark !important;
 }
 
-.btn-green {
-  background-color: #00df07 !important;
-  // color: $black;
+.btn-blue {
+  background-color: $blue !important;
+  color: white;
 } 
 
 .btn-red {
-  background-color: #ff0000 !important;
-  // color: $black;
+  background-color: $black !important; 
+  color: white;
 } 
 
 @media screen and (max-width: 1200px) {

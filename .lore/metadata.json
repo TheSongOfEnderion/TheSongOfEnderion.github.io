@@ -22,6 +22,11 @@
       "path": "assets/new.json",
       "parent": "geh"
     },
+    "story": {
+      "title": "Story",
+      "path": "content/story.json",
+      "parent": "geh"
+    },
 
     "ethan-morales": {
       "title": "Ethan Morales",

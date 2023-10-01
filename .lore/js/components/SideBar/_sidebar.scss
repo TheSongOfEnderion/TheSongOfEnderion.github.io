@@ -5,23 +5,20 @@ $sidebar--bg: $black;
 .sidebar {
   // Block
   position: fixed;
-
-
   height: 100%;
   min-height: 400px;
-  
-  // Box
 
-  // Element
 
   // Misc
   z-index:  1;
-  // @include shadow;
+}
 
-
+#sidebarobj {
+  left: 0px;
 }
 
 .user {
+  width: 250px;
   margin-left: 40px;
   padding: 20px;
   padding-left: 10px;
@@ -34,10 +31,13 @@ $sidebar--bg: $black;
   background-color: $black;
   color: white;
   transition: 0.3s ease-in-out;
+  // border-top-right-radius: 20px;
+  // border-bottom-right-radius: 20px;
+  @include shadow;
 }
 
 .editor-bar {
-  background-color: $dark;
+  background-color: $dark; 
   height: 100%;
   width: 40px;
   padding: 0px;

@@ -419,7 +419,7 @@ summary {
 .toc {
   display: flex;
   flex-direction: column;
-  max-width: 200px;
+  max-width: 500px;
   min-width: 150px;
   width: -moz-fit-content;
   width: fit-content;
@@ -453,64 +453,6 @@ summary {
   width: 250px;
 }
 
-.editbar {
-  display: none;
-  position: fixed;
-  top: 0px;
-  right: 100px;
-  width: 180px;
-  height: 90vh;
-  min-height: 400px;
-  padding: 20px;
-  padding-top: 100px;
-  border-radius: 20px;
-  border-top-right-radius: 0px;
-  border-top-left-radius: 0px;
-  background-color: transparent;
-  color: white;
-  z-index: 999;
-  transition: 0.5s ease-in-out;
-}
-.editbar h1 {
-  font-size: 17px;
-  font-weight: 100;
-}
-.editbar .buttons {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-.button--edit {
-  padding: 5px 10px 5px 10px;
-  margin-right: 5px;
-  border: none;
-  border-radius: 5px;
-  width: 100%;
-  background-color: #4584FF;
-  color: white;
-  transition: 0.1s linear;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
-  cursor: pointer;
-  font-weight: 100 !important;
-  font-style: normal;
-  font-size: 14px;
-}
-.button--edit:hover {
-  transform: scale(1.1);
-}
-.button--edit:active {
-  transform: scale(0.9);
-}
-
-.button--edit-red {
-  background-color: #F44336 !important;
-}
-
 .editor-container {
   position: fixed;
   background-color: rgba(0, 0, 0, 0.36);
@@ -525,7 +467,6 @@ summary {
   width: 55vw;
   height: 750px;
   padding: 30px;
-  border-radius: 20px;
   gap: 10px;
   background-color: white;
   color: #191919;
@@ -621,12 +562,14 @@ summary {
   background-color: #252525 !important;
 }
 
-.btn-green {
-  background-color: #00df07 !important;
+.btn-blue {
+  background-color: #4584FF !important;
+  color: white;
 }
 
 .btn-red {
-  background-color: #ff0000 !important;
+  background-color: #191919 !important;
+  color: white;
 }
 
 @media screen and (max-width: 1200px) {
@@ -733,9 +676,6 @@ summary {
   font-size: 12px;
   font-family: Rubik;
 }
-.searchbox:focus {
-  outline: none;
-}
 
 .searchbox-area {
   margin-right: 5px;
@@ -743,7 +683,7 @@ summary {
 
 #suggestions {
   position: absolute;
-  background-color: #4584FF;
+  background-color: #252525;
   width: 62%;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
@@ -751,14 +691,51 @@ summary {
 
 .suggestion-item {
   padding: 5px;
-  border-top: 2px solid #191919;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 13px;
   cursor: pointer;
   transition: 0.1s ease-in;
 }
 .suggestion-item:hover {
-  border-top: 2px solid #4584FF;
-  background-color: #252525;
+  background-color: #4584FF;
+}
+
+#editmode {
+  width: -moz-fit-content;
+  width: fit-content;
+  height: 100%;
+}
+
+.button--edit {
+  border: none;
+  border-radius: 5px;
+  background-color: #4584FF;
+  color: white;
+  transition: 0.1s linear;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  cursor: pointer;
+  font-weight: 100 !important;
+  font-style: normal;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.button--edit:hover {
+  outline: 2px solid white;
+}
+.button--edit:active {
+  background-color: rgba(69, 132, 255, 0.7);
+}
+
+.button--edit-red {
+  background-color: #F44336 !important;
+}
+.button--edit-red:hover {
+  outline: 2px solid white;
+}
+.button--edit-red:active {
+  background-color: rgba(244, 67, 54, 0.7) !important;
 }
 
 .sidebar {
@@ -768,7 +745,12 @@ summary {
   z-index: 1;
 }
 
+#sidebarobj {
+  left: 0px;
+}
+
 .user {
+  width: 250px;
   margin-left: 40px;
   padding: 20px;
   padding-left: 10px;
@@ -781,6 +763,7 @@ summary {
   background-color: #191919;
   color: white;
   transition: 0.3s ease-in-out;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
 .editor-bar {
@@ -915,6 +898,38 @@ summary {
   transform: scale(0.9);
 }
 .button--sidebartoggle svg {
+  fill: rgba(255, 255, 255, 0.3);
+}
+
+.button--sidebaredit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: -5px;
+  padding: 2px 5px;
+  border: none;
+  border-radius: 4px;
+  background-color: transparent;
+  color: white;
+  font-size: 1.3em;
+  cursor: pointer;
+  z-index: 999;
+  transition: 0.1s ease-in-out;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.button--sidebaredit:hover {
+  transform: scale(1.1);
+}
+.button--sidebaredit:hover svg {
+  fill: rgba(255, 255, 255, 0.7);
+}
+.button--sidebaredit:active, .button--sidebaredit :focus {
+  transform: scale(0.9);
+}
+.button--sidebaredit svg {
   fill: rgba(255, 255, 255, 0.3);
 }
 

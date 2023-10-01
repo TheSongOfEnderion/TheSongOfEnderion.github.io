@@ -92,7 +92,8 @@ function start() {
           
         
           if (resp.status === 404) {
-            this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
+            // this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
+            this.content = createContentObj(`Page <span class="error">${pageId}</span> does not exist`);
           } else {
             this.content = (await resp.json())|| createContentObj("The Page is empty");
             // console.log(this.content)
@@ -103,7 +104,8 @@ function start() {
           // }
 
         } else {
-          this.content = savePage.trim()
+          this.content = savePage
+          console.log("this is called")
         }
 
         this.pageId = pageId
@@ -118,6 +120,7 @@ function start() {
         return pageId
       },
       savePage(newPage) {
+
         this.reload(this.getCurrentPageId(), false, newPage)
       }
     }
@@ -157,6 +160,7 @@ function mount(app) {
     searchbox,
     sidebar,
     sidebarbtn,
+    sidebaredit,
     tab,
     toggle,
   ]
@@ -491,10 +495,21 @@ const card = {
         // Return if value is empty
         if (isObjEmpty(value)) return  
         
+        // Unnecessarily complcated preview removal.        Massive SKILL ISSUE lmao it works
         let areas = copyobj(value['areas'])
+        if (areas.hasOwnProperty("preview")) {
+          const length = Object.keys(areas["preview"].tabs).length
+          if (length == 1) {
+            const tabName = Object.keys(areas["preview"].tabs)[0]
+            if (areas["preview"].tabs[tabName].trim().length == 0) {
+              delete areas["preview"]
+            }
+          } else if (length == 0) {
+            delete areas["preview"]
+          }
 
-        
-        console.log(areas)
+        }
+
         for (const area in areas) {
           for (const tab in areas[area].tabs) {
             
@@ -510,7 +525,6 @@ const card = {
           }
         }
         this.areas = areas
-        console.log(this.areas)
 
         // Refresh
         await this.refresh()
@@ -518,7 +532,7 @@ const card = {
         this.makeTOC()
         this.toggleArea()
 
-        // this.$emit('processed-content', this.areas)
+        this.$emit('processed-content', value)
       }
     },
     toggleState: {
@@ -730,17 +744,11 @@ const editbar = {
     }
   },
   template: `
-    <div class="editbar">
-      <h1>Edit Mode</h1>
-
-      <div class="buttons">
-        <button class="button--edit" @click="open">Edit Page</button>
-        <button class="button--edit">Add Page</button>
-        <button class="button--edit button--edit-red">Delete Page</button>
-      </div>
-
-      
-
+    <div id="editmode" class="hide">
+      <h1 class="titles">Edit Mode</h1>
+      <button class="button--edit" @click="open">Edit Page</button>
+      <button class="button--edit">Add Page</button>
+      <button class="button--edit button--edit-red">Delete Page</button>
     </div>
   `
 }
@@ -771,14 +779,25 @@ const editor = {
   },
   methods: {
     start(value){
-      this.pageData = copyobj(value)
+      this.pageData = copyobj(value["areas"])
+
+
       this.changeArea('full')
     },
     changeArea(area) {
+
+      if (area == "preview" && !this.pageData.hasOwnProperty("preview")) {
+        this.pageData["preview"] = {
+          tabs: {
+            "default": ""
+          }
+        }
+      }
+
       // Set initial variables
       this.isCurrentProfile = false
       this.currentArea = area
-      this.currentTab = Object.keys(this.pageData[area].original)[0]
+      this.currentTab = Object.keys(this.pageData[area].tabs)[0]
       this.currentAreaObj = copyobj(this.pageData[area])
 
       // Set <Tabs btn active>
@@ -798,24 +817,36 @@ const editor = {
       // Remove active status of btn-profile
       this.getNode("btn-profile").classList.remove("btn-active")
 
+      document.getElementById("tab-rename-input").value = this.currentTab
+
       // Set <textarea>
       this.refreshTextArea()
     },
     changeTab(event) {
       // Save the last area
       this.isCurrentProfile = false
-      const newTab = event.currentTarget.value
-      this.currentTab = newTab
 
+      let newTab = ""
+      if (event instanceof Event) {
+        newTab = event.currentTarget.value
+      } else {
+        newTab = event
+      }
+
+      this.currentTab = newTab
+      
+      document.getElementById("tab-rename-input").value = newTab
       this.refreshTextArea()
+
+      
     },
     refreshTextArea(){
-      this.getNode("textarea").value = `${this.currentAreaObj.original[this.currentTab]}`
+      this.getNode("textarea").value = `${this.currentAreaObj.tabs[this.currentTab]}`
     },
     editProfile() {
       if (this.isCurrentProfile == false) {
         this.isCurrentProfile = true
-        this.getNode("textarea").value = `${this.currentAreaObj.profileOriginal}`
+        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`
         this.getNode("btn-profile").classList.add("btn-active")
       } else {
         this.isCurrentProfile = false 
@@ -825,41 +856,27 @@ const editor = {
     },
     saveTextArea(event) {
       if (this.isCurrentProfile == false) {
-        this.pageData[this.currentArea].original[this.currentTab] = event.currentTarget.value
-        this.currentAreaObj.original[this.currentTab] = event.currentTarget.value
+        this.pageData[this.currentArea].tabs[this.currentTab] = event.currentTarget.value
+        this.currentAreaObj.tabs[this.currentTab] = event.currentTarget.value
       } else {
-        this.pageData[this.currentArea].profileOriginal = event.currentTarget.value
-        this.currentAreaObj.profileOriginal = event.currentTarget.value
+        const profile =  jsyaml.load(event.currentTarget.value.trim(), 'utf8')
+        this.pageData[this.currentArea].profile = profile
+        this.currentAreaObj.profile = profile
       }
+      console.log(this.pageData)
     },
     save() {
-      let newPage = ""
-      // Check if preview is empty
-      const previewKeys = Object.keys(this.pageData['preview'].original)
-      const noPreview = (previewKeys.length == 1 &&
-                         previewKeys[0] == 'default' &&
-                         this.pageData['preview'].original['default'].trim() == "")
-                         ? true : false
-      
-      // Process full and preview area
-      for (const area of ['full', 'preview']) {
+      const tags = document.getElementById("tags-input").value  
+      const parent = document.getElementById("parent-input").value
+      const path = document.getElementById("input-path").value
 
-        // Checks profile
-        const profile = this.pageData[area].profileOriginal.trim()
-        if (profile.trim() != "") newPage += `=============================\n${profile}\n=============================\n`
-        
-        // Process tabs
-        const tabCount = Object.keys(this.pageData[area].original).length
-        for (const tabname in this.pageData[area].original) {
-          const tab = this.pageData[area].original[tabname]
-          
-          if (tabCount === 1) newPage += `${tab}\n` 
-          else newPage += `===${tabname}===\n${tab}\n\n`
-        }
+      let newPage = {
+        "areas": this.pageData,
+        "tags": tags,
+        "parent": parent,
+        "path": path
+      }
 
-        // Checks if there's a preview
-        if (area == 'full' && noPreview == false) newPage += '\n----------------------------------------------------------------------\n'
-      } 
 
       // emits saved page
       this.$emit('save-page', newPage)
@@ -870,11 +887,11 @@ const editor = {
       if (tabname === "") return
 
       // Checks if tabname exists already
-      const tabs = Object.keys(this.currentAreaObj.original)
+      const tabs = Object.keys(this.currentAreaObj.tabs)
       if (tabs.includes(tabname)) return
 
       // Adds new tabname
-      this.pageData[this.currentArea].original[tabname] = ""
+      this.pageData[this.currentArea].tabs[tabname] = ""
       
       // Refresh
       this.changeArea(this.currentArea)
@@ -890,14 +907,14 @@ const editor = {
       if (tabname === "") return
 
       // Checks if tabname exists already
-      const tabs = Object.keys(this.currentAreaObj.original)
+      const tabs = Object.keys(this.currentAreaObj.tabs)
       if (tabs.includes(tabname)) return
 
       // Save current tab
-      this.pageData[this.currentArea].original[tabname] = `${this.pageData[this.currentArea].original[this.currentTab]}`
+      this.pageData[this.currentArea].tabs[tabname] = `${this.pageData[this.currentArea].tabs[this.currentTab]}`
       
       // Delete tab
-      delete this.pageData[this.currentArea].original[this.currentTab]
+      delete this.pageData[this.currentArea].tabs[this.currentTab]
 
       // Refresh
       this.changeArea(this.currentArea)
@@ -906,6 +923,17 @@ const editor = {
       this.getNode('tab-rename').classList.toggle('hide')
 
       this.getNode(`tab-rename-btn`).classList.remove("btn-active")
+    },
+    tabDelete() {
+      // delete this.pageData
+
+      const keys = Object.keys(this.pageData[this.currentArea].tabs).length
+      if (keys == 1) return
+
+      delete this.pageData[this.currentArea].tabs[this.currentTab]
+
+      // Refresh
+      this.changeArea(this.currentArea)
     },
     openTabbtn(id) {
       this.getNode(`tab-${id}-btn`).classList.toggle("btn-active")
@@ -933,7 +961,7 @@ const editor = {
             <label>Path: </label>
             <div class="width-100">
               <input type="text" name="example" list="path-choices" 
-                     class="input width-100"
+                     class="input width-100" id="input-path"
                      placeholder="/">
               <datalist id="path-choices">
                 <option :value="value" v-for="(value, index) in pathChoices">
@@ -965,7 +993,7 @@ const editor = {
           <label>Tabs</label>
           <!-- Dropdown -->
           <select id="tab-select" @change="changeTab" v-if="currentAreaObj">
-              <option :value="name" v-for="(value, name) in currentAreaObj.original">
+              <option :value="name" v-for="(value, name) in currentAreaObj.tabs">
                 {{ name }}
               </option>
           </select>
@@ -975,7 +1003,7 @@ const editor = {
             <button class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
             <button class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
           </span>
-          <button class="btn">Delete</button>
+          <button class="btn" @click="tabDelete('delete')">Delete</button>
         </div>
 
         <!-- Tags -->
@@ -1137,7 +1165,7 @@ const searchbox = {
         searchbox.addEventListener("keydown", function(e) {
           const val = e.target.value
           const sugs = document.getElementById("suggestions")
-          
+          console.log("val: ", val)
 
           let suggestedList = []
 
@@ -1181,7 +1209,7 @@ const sidebar = {
       test: "Asd",
     }
   },
-  components: ['Searchbox', 'Toggle'],
+  components: ['Searchbox', 'Toggle', 'Editbar'],
   computed: {
     isCurrentNav() {
       let pageId = (new URLSearchParams(window.location.search)).get('p')
@@ -1250,58 +1278,61 @@ const sidebar = {
       if (subnav) {
         subnav.classList.add("hide-subnav")
       }
-    }
+    },
   },
   template: `
   
   <div class="sidebar" >
 
     <div class="editor-bar">
-    <Sidebarbtn></Sidebarbtn>
-    </div>
+      <Sidebarbtn></Sidebarbtn>
+      <SidebarEdit></SidebarEdit>
+    </div> 
 
 
-    <div class="user" id="sidebarobj">
-      <button class="close" @click="closeSidebar">✕</button>
+    <div class="user" id="sidebarobj" style="left: 0px;">
 
-      <!-- Titles section -->
-      <div class="titles">
-        <h1 class="title">{{ projectTitle }}</h1>
-        <h2 class="subtitle">{{ projectSubtitle }}</h2>
-      </div>  
+      <Editbar/>
 
-      <!-- Search Box -->
-      <div class="inputs">
-      <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
-      </div>
-      
-      <!-- Navigation Links -->
-      <div class="nav-links" v-if="rerender">
-        <template v-for="(value, name, index) in navs">
-            
-            <!-- Main Button -->
-            <span v-html="value.main"
-                  :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"
-                  ></span> 
-                  <!-- @mouseover="expand(name + '-navid')" -->
-            <button v-if="Object.keys(value.subnav).length != 0"
-                    class="button button--showsub" 
-                    @click="toggleSubNav(name + '-navid')">
-                    ✢
-            </button><br> 
-            
-            <!-- Sub button -->
-            <div v-if="Object.keys(value.subnav).length != 0"
-                 class="button--subnav hide-subnav"
-                 :id="name + '-navid'">
-                 <!-- @mouseleave="collapse(name + '-navid')" -->
-              <template v-for="(valuesub, namesub, indexsub) in value.subnav">
-                <span v-html="valuesub" class="button--mainnav"></span> 
-                <br>
-              </template>
-            </div>
-
-        </template>
+      <div id="navigation">
+        <button class="close" @click="closeSidebar">✕</button>
+        <!-- Titles section -->
+        <div class="titles">
+          <h1 class="title">{{ projectTitle }}</h1>
+          <h2 class="subtitle">{{ projectSubtitle }}</h2>
+        </div>
+        <!-- Search Box -->
+        <div class="inputs">
+        <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="nav-links" v-if="rerender">
+          <template v-for="(value, name, index) in navs">
+        
+              <!-- Main Button -->
+              <span v-html="value.main"
+                    :class="['button--mainnav', isCurrentNav== getNameClean(name) ? 'button--active' : '']"
+                    ></span>
+                    <!-- @mouseover="expand(name + '-navid')" -->
+              <button v-if="Object.keys(value.subnav).length != 0"
+                      class="button button--showsub"
+                      @click="toggleSubNav(name + '-navid')">
+                      ✢
+              </button><br>
+        
+              <!-- Sub button -->
+              <div v-if="Object.keys(value.subnav).length != 0"
+                   class="button--subnav hide-subnav"
+                   :id="name + '-navid'">
+                   <!-- @mouseleave="collapse(name + '-navid')" -->
+                <template v-for="(valuesub, namesub, indexsub) in value.subnav">
+                  <span v-html="valuesub" class="button--mainnav"></span>
+                  <br>
+                </template>
+              </div>
+          </template>
+        </div>
       </div>
     </div>
 
@@ -1315,8 +1346,8 @@ const sidebarbtn = {
   name: "Sidebarbtn",
   data() {
     return {
-      pos: {},
-      card: {},
+      pos: "",
+      card: "",
       lastWidth: 0,
       checked: false,
     }
@@ -1325,19 +1356,12 @@ const sidebarbtn = {
     openSidebar() {
       
       if (this.pos.style.left == "0px") {
-        this.pos.style.left = "-500px" 
-        this.card.style.marginLeft = "0px"
+        this.sideClose()
       } else {
         this.pos.style.left = "0px"
-
-        if (window.innerWidth > 700) {
-          this.card.style.marginLeft = "calc(300px - 70px)"
-        }
-        
+        if (window.innerWidth > 700) this.card.style.marginLeft = "calc(300px - 70px)"
       }
 
-      console.log(window.innerWidth)
-      // document.getElementById("sidebaropen").style.display = "none";
     },
     sideOpen() {
       this.pos.style.left = "0px"
@@ -1349,18 +1373,22 @@ const sidebarbtn = {
     },
     isOpen() {
       return this.pos.style.left == "0px"
+    },
+    getElements() {
+      this.pos = document.getElementById("sidebarobj")
+      this.card = document.getElementsByClassName("card")[0]
     }
   },
   mounted() {
-
-    this.pos = document.getElementById("sidebarobj")
-    this.card = document.getElementsByClassName("card")[0]
-
+    this.getElements();
     window.addEventListener('resize', ()=> {
       
       // Negative - Openig to the right
       if (this.lastWidth - window.innerWidth < 0) {
-        
+        // if (this.isOpen() == true) {
+
+        //   return
+        // }
         
         // Positive - Closing to the left
       } else if (this.lastWidth - window.innerWidth > 0) {
@@ -1387,6 +1415,35 @@ const sidebarbtn = {
             </svg>
     </button>
   `
+}
+
+const sidebaredit = {
+  name: "SidebarEdit",
+  data() {
+    return {
+      nav: "",
+      edit: "",
+    }
+  },
+  methods: {
+    openEditMenu() {
+      this.nav.classList.toggle("hide")
+      this.edit.classList.toggle("hide")
+    }
+  },
+  mounted() {
+    this.nav = document.getElementById("navigation")
+    this.edit = document.getElementById("editmode")
+  },
+  template: `
+    <button class="button--sidebaredit"
+            id="sidebaredit"
+            @click="openEditMenu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 16 16">
+              <path d="M15.8254 0.12029C15.9935 0.264266 16.0469 0.501593 15.9567 0.703697C14.4262 4.13468 11.2138 8.8743 8.86227 11.3447C8.22716 12.012 7.54616 12.4205 7.02348 12.6626C6.81786 12.7578 6.63568 12.8278 6.48885 12.878C6.4711 13.1051 6.42878 13.4159 6.32843 13.7456C6.12786 14.4046 5.66245 15.2248 4.62136 15.4851C3.5492 15.7531 2.35462 15.7535 1.54292 15.6182C1.33748 15.584 1.14585 15.5393 0.980547 15.4834C0.825775 15.4311 0.650744 15.3548 0.514627 15.2357C0.443829 15.1737 0.360185 15.0799 0.311435 14.9481C0.258258 14.8043 0.259521 14.6486 0.315083 14.5051C0.410093 14.2596 0.631487 14.1253 0.776495 14.0528C1.16954 13.8563 1.40109 13.6002 1.64337 13.2275C1.73756 13.0826 1.82737 12.9298 1.93011 12.755C1.96705 12.6921 2.00566 12.6264 2.04674 12.5572C2.1982 12.3021 2.37307 12.0176 2.59324 11.7094C3.12105 10.9705 3.79396 10.7845 4.33889 10.8132C4.46509 10.8198 4.58224 10.8377 4.68713 10.8606C4.74935 10.6888 4.82884 10.4812 4.92515 10.253C5.18625 9.63422 5.58306 8.83431 6.1124 8.18428C8.28757 5.51317 12.2914 1.97796 15.2287 0.0800421C15.4146 -0.0400593 15.6573 -0.0236867 15.8254 0.12029ZM4.70529 11.9123C4.6863 11.904 4.66255 11.8943 4.63473 11.8843C4.54498 11.8518 4.42254 11.819 4.28633 11.8118C4.03959 11.7988 3.71251 11.8629 3.40698 12.2906C3.21049 12.5657 3.05201 12.8229 2.90659 13.0678C2.87165 13.1266 2.83678 13.186 2.80193 13.2453C2.69557 13.4263 2.58935 13.6071 2.48181 13.7725C2.27563 14.0897 2.04461 14.3832 1.72254 14.6343C2.41108 14.7465 3.45779 14.7452 4.37882 14.5149C4.93773 14.3752 5.22233 13.9454 5.37176 13.4544C5.44565 13.2117 5.47846 12.9747 5.49221 12.796C5.49473 12.7633 5.49658 12.7328 5.49794 12.7049L4.70529 11.9123ZM6.14562 11.9384C6.2655 11.8982 6.42233 11.8389 6.6032 11.7552C7.03933 11.5532 7.60833 11.2117 8.13795 10.6553C10.0383 8.65889 12.5503 5.08575 14.1901 2.02381C11.5991 3.95066 8.62444 6.68316 6.88782 8.81573C6.4457 9.35865 6.09251 10.0587 5.84648 10.6418C5.72491 10.9298 5.63247 11.1822 5.57065 11.3617C5.57051 11.3622 5.57036 11.3626 5.57022 11.363L6.14562 11.9384ZM1.1724 14.9774C1.17219 14.9774 1.17409 14.9757 1.1787 14.9726C1.1749 14.9759 1.1726 14.9775 1.1724 14.9774ZM4.75419 11.9354L4.75486 11.9357L4.75612 11.9364C4.75646 11.9366 4.7558 11.9362 4.75419 11.9354Z"/>
+            </svg>
+    </button> 
+  ` 
 }
 
 const tab = {

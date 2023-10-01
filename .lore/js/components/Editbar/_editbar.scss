@@ -2,50 +2,20 @@
 
 $editbar--bg: transparent;
 
-.editbar {
-  // Block
-  display: none;
-  position: fixed;
-  top: 0px;
-  right: 100px;
-  width: 180px;
-  height: 90vh;
-  min-height: 400px;
-  // Box
-  padding: 20px;
-  padding-top: 100px;
-  border-radius: $gb-border-radius;
-  border-top-right-radius: 0px;
-  border-top-left-radius: 0px;
-  
-  // Element
-  background-color: $editbar--bg;
-  color: white;
-  // Misc
-  z-index:  999;
-  transition: 0.5s ease-in-out;
 
-  // Children
-  h1 {
-    font-size: 17px;
-    font-weight: 100;
-  }
-  .buttons {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
+#editmode {
+  width: fit-content;
+  height: 100%;
+  // display: flex;
+  // flex-direction: column;
 }
-  
 
 .button--edit {
-  padding: 5px 10px 5px 10px;
-  margin-right: 5px;
+  // padding: 5px 10px 5px 10px;
+
   border: none;
   border-radius: 5px;
-  width: 100%;
+
 
   // Element
   background-color: $blue;
@@ -60,14 +30,21 @@ $editbar--bg: transparent;
   font-style: normal;
   font-size: 14px;
   
+  margin-bottom: 10px;
   &:hover {
-    transform: scale(1.1);
+    outline: 2px solid white;
   }
   &:active {
-    transform: scale(0.9);
+    background-color: rgba($blue, 70%);
   }
 }
 
 .button--edit-red {
   background-color: $red !important;
+  &:hover {
+    outline: 2px solid white;
+  }
+  &:active {
+    background-color: rgba($red, 70%) !important;
+  }
 }

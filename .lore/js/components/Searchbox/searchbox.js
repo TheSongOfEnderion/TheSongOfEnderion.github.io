@@ -37,7 +37,7 @@ const searchbox = {
         searchbox.addEventListener("keydown", function(e) {
           const val = e.target.value
           const sugs = document.getElementById("suggestions")
-          
+          console.log("val: ", val)
 
           let suggestedList = []
 
