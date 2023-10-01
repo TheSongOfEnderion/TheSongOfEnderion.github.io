@@ -59,6 +59,32 @@ function start() {
 
     },
     methods: {
+      async fetchData(url) {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          
+          xhr.open('GET', url, true); // Replace with your API URL
+          
+          xhr.onload = function () {
+            if (xhr.status === 200) {
+              try {
+                const response = JSON.parse(xhr.responseText);
+                resolve(response);
+              } catch (error) {
+                reject(error);
+              }
+            } else {
+              reject(new Error(`Request failed with status ${xhr.status}`));
+            }
+          };
+      
+          xhr.onerror = function () {
+            reject(new Error('Request failed'));
+          };
+      
+          xhr.send();
+        });
+      },
       async reload(pageId, isPopState = false, savePage="") {
 
        
@@ -87,14 +113,16 @@ function start() {
 
         // Update Card Content
         if (savePage == "") {
-          const resp = await fetch(pageMeta.path);
+          // const resp = await fetch(pageMeta.path);
+          const resp = await this.fetchData(pageMeta.path);
+
           
         
           if (resp.status === 404) {
             // this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
             this.content = createContentObj(`Page <span class="error">${pageId}</span> does not exist`);
           } else {
-            this.content = (await resp.json())|| createContentObj("The Page is empty");
+            this.content = resp || createContentObj("The Page is empty");
             // console.log(this.content)
           }
 
