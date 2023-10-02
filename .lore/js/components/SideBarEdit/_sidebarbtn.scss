@@ -9,6 +9,7 @@ $sidebar-btn--color: $blue;
   // bottom: 20px !important;
   // left: 20px;
 
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -33,7 +34,7 @@ $sidebar-btn--color: $blue;
   &:hover {
     transform: scale(1.1);
     svg {
-      fill: rgba(white, 0.70);
+      fill: rgba($blue, 1);
     }
   }
   &:active, :focus {

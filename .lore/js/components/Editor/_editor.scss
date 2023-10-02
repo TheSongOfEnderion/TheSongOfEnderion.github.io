@@ -9,20 +9,22 @@
 
   display: grid;
   place-items:  center;
+
 }
 
 #editor {
   
   // Block
-  width: 55vw;
-  height: 750px;
+  width: 60vw;
+  height: 100%;
   padding: 30px;
-  // border-radius: $gb-border-radius;
+  border-radius: 10px;
   gap: 10px;
 
   // Element
   background-color: white;
   color: $black;
+
 }
 
 .textbox {
@@ -66,20 +68,32 @@
 }
 
 .boxes {
-  border: 1px solid $dark;
-  border-radius: 10px;
-  padding: 10px;
+  // border: 1px solid rgba($dark, 20%);
+  border-radius: 3px;
+  // padding: 10px;
 }
 
+.hr {
+  margin: 10px 0px;
+  border: 1px solid rgba($dark, 20%);
+}
 
 
 
 .editor-options {
   width: 150px;
-
+  border-left: 1px solid rgba($dark, 20%);
+  padding-left: 10px;
   #tab-select {
     width: 100%;
     font-size: 14px;
+    border: 1px solid rgba($dark, 20%);
+    padding: 4px;
+    border-radius: 3px;
+    &:focus {
+      outline: 2px solid $blue;
+    }
+
   }
 
   .tab-options {
@@ -90,12 +104,18 @@
   }
 }
 
+
 .input {
   outline: none;
-  border: 1px solid $dark;
+  border: 1px solid rgba($dark, 20%);
+  // background-color: rgba($blue, 19%);
   padding: 4px;
   font-size: 12px;
-  border-radius: 5px;
+  border-radius: 3px;
+
+  &:focus {
+    outline: 2px solid $blue;
+  }
 }
 
 .mt-15 {
@@ -162,8 +182,20 @@
   color: white;
 } 
 
-@media screen and (max-width: 1200px) {
+
+
+
+@media screen and (max-width: 1000px) {
   #editor {
-    width: 90vw;
+    width: 80vw;
   }
-}
+} 
+
+
+
+
+@media screen and (max-width: 700px) {
+  #editor {
+    width: 100vw;
+  }
+} 

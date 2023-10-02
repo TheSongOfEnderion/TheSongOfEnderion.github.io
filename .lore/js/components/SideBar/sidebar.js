@@ -76,20 +76,29 @@ const sidebar = {
         subnav.classList.add("hide-subnav")
       }
     },
+    hidesidebar() {
+      if (window.innerWidth < 800) {
+        this.pos = document.getElementById("sidebarobj")
+        this.card = document.getElementsByClassName("card")[0]
+        
+        this.pos.style.left = "-500px" 
+        this.card.style.marginLeft = "0px"
+      }
+    }
   },
   template: `
   
-  <div class="sidebar" >
+  <div class="sidebar" v-click-outside="hidesidebar">
 
     <div class="editor-bar">
       <Sidebarbtn></Sidebarbtn>
       <SidebarEdit></SidebarEdit>
-    </div> 
-
+    </div>  
+ 
 
     <div class="user" id="sidebarobj" style="left: 0px;">
 
-      <Editbar/>
+      <EditMenu/>
 
       <div id="navigation">
         <button class="close" @click="closeSidebar">✕</button>

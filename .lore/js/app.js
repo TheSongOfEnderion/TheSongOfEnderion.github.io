@@ -26,8 +26,8 @@ function start() {
     },
     async mounted() {
       // Get Metadata
-      const metadata = await (await fetch(".lore/metadata.json")).json();
-      
+      const metadata = await this.fetchData(".lore/metadata.json")
+
       // Save key-info
       this.projectTitle = metadata.title;
       this.projectSubtitle = metadata.subtitle;
@@ -60,30 +60,18 @@ function start() {
     },
     methods: {
       async fetchData(url) {
-        return new Promise((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          
-          xhr.open('GET', url, true); // Replace with your API URL
-          
-          xhr.onload = function () {
-            if (xhr.status === 200) {
-              try {
-                const response = JSON.parse(xhr.responseText);
-                resolve(response);
-              } catch (error) {
-                reject(error);
-              }
-            } else {
-              reject(new Error(`Request failed with status ${xhr.status}`));
-            }
-          };
-      
-          xhr.onerror = function () {
-            reject(new Error('Request failed'));
-          };
-      
-          xhr.send();
-        });
+        try {
+          console.log("Working: ", NL_OS)
+        } catch (error) {
+          const resp = await fetch(url)
+          if (resp.status === 404) {
+            console.log("test")
+            return "Error"
+          }
+          return (await resp.json())
+
+        }
+
       },
       async reload(pageId, isPopState = false, savePage="") {
 
@@ -113,17 +101,24 @@ function start() {
 
         // Update Card Content
         if (savePage == "") {
-          const resp = await fetch(pageMeta.path);
-          // const resp = await this.fetchData(pageMeta.path);
-
+          const resp = await this.fetchData(pageMeta.path);
           
-        
-          if (resp.status === 404) {
+          if (resp == "Error") {
             // this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
             this.content = createContentObj(`Page <span class="error">${pageId}</span> does not exist`);
           } else {
-            this.content = (await resp.json()) || createContentObj("The Page is empty");
-            // console.log(this.content)
+            this.content = resp
+            console.log(this.content)
+            if (this.content["areas"].hasOwnProperty("full")) {
+              const tabs = this.content["areas"]["full"].tabs
+              if (Object.keys(tabs).length === 1) {
+                const tabname = Object.keys(tabs)[0]
+                if (tabs[tabname].trim() == "") {
+                  this.content = createContentObj("The Page is empty");
+                }
+              }
+            }
+            
           }
 
           // if (isError) {
@@ -153,10 +148,29 @@ function start() {
     }
   })
 
+  // https://stackoverflow.com/questions/36170425/detect-click-outside-element
+  const clickOutside = {
+    beforeMount: (el, binding) => {
+      el.clickOutsideEvent = event => {
+        // here I check that click was outside the el and his children
+        if (!(el == event.target || el.contains(event.target))) {
+          // and if it did, call method provided in attribute value
+          binding.value();
+        }
+      };
+      document.addEventListener("click", el.clickOutsideEvent);
+    },
+    unmounted: el => {
+      document.removeEventListener("click", el.clickOutsideEvent);
+    },
+  };
+
+  app.directive("click-outside", clickOutside)
   root = mount(app) 
  
 
 }
+
 
 
 function setup() {
@@ -173,4 +187,21 @@ function setup() {
     left: 0, 
     behavior: 'smooth' 
   });
+
+  const clickOutside = {
+  beforeMount: (el, binding) => {
+    el.clickOutsideEvent = event => {
+      // here I check that click was outside the el and his children
+      if (!(el == event.target || el.contains(event.target))) {
+        // and if it did, call method provided in attribute value
+        binding.value();
+      }
+    };
+    document.addEventListener("click", el.clickOutsideEvent);
+  },
+  unmounted: el => {
+    document.removeEventListener("click", el.clickOutsideEvent);
+  },
+};  
 }
+ 

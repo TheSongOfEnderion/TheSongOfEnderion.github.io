@@ -22,6 +22,11 @@
       "path": "assets/new.json",
       "parent": "geh"
     },
+    "add-page": {
+      "title": "Add Page",
+      "path": "assets/new.json",
+      "parent": ""
+    },
     "story": {
       "title": "Story",
       "path": "content/story.json",

@@ -265,10 +265,10 @@ const editor = {
                  placeholder="home">
         </div>
 
-
+        <hr class="hr">
    
         <!-- Tab:New -->
-        <div class="flex flex-c mt-15 boxes hide" id="tab-new">
+        <div class="flex flex-c boxes hide" id="tab-new">
           <label>New Tab</label>
           <input type="text" id="tab-new-input" class="input width-100"
                  placeholder="home">
@@ -281,7 +281,7 @@ const editor = {
 
 
         <!-- Tab:Rename -->
-        <div class="flex flex-c mt-15 boxes hide" id="tab-rename">
+        <div class="flex flex-c boxes hide" id="tab-rename">
           <label>Rename Tab</label>
           <input type="text" id="tab-rename-input" class="input width-100"
                  placeholder="home">

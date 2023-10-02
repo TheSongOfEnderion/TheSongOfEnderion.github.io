@@ -45,6 +45,11 @@ $sidebar--bg: $black;
 
   // justify-content: center;
   padding-top: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  align-items: flex-start;
 }
 
 .titles {
