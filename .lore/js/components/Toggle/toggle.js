@@ -27,12 +27,9 @@ const toggle = {
   },
   methods: {
     toggleArea() {
-      
       const toggleState = document.getElementById("switch").checked
       localStorage.setItem(this.uniqueId, toggleState);
       root.toggleState = toggleState
-      console.log(root.toggleState)
-
     }
   },
   template: `

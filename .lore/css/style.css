@@ -505,7 +505,6 @@ summary {
   width: 60vw;
   height: 100%;
   padding: 30px;
-  border-radius: 10px;
   gap: 10px;
   background-color: white;
   color: #191919;
@@ -522,7 +521,7 @@ summary {
 
 #textarea {
   width: 100%;
-  height: 80%;
+  height: 90%;
   border: none;
   outline: none;
   margin-top: 20px;
@@ -586,6 +585,15 @@ summary {
 
 .path-select {
   font-size: 14px;
+}
+
+.table .category {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
+.invalid {
+  outline: 2px solid #F44336;
 }
 
 .btn {

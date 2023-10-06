@@ -16,7 +16,7 @@
 <body onload="start()">
 
   <div id="app">
-    <Editor ref="editor" :directory="directory" @save-page="savePage"></Editor>
+    <Editor ref="editor" :directory="directory" @save-page="savePage" :page-id="pageId"></Editor>
     
     <div class="container full" id="top">
 
@@ -42,7 +42,6 @@
   <script src=".lore/js/import/vue.global.js"></script>
   
   <script src=".lore/js/index.js"></script>
-  
 </body>
 
 </html>

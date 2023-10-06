@@ -14,20 +14,24 @@ const editor = {
       currentTab: "",
       currentAreaObj: {}
 
-
+      // if new page
     }
   },
   components: ['EditorTab'],
   emits: ['save-page'],
   props: {
-    directory: { type: Object, required: true }
+    directory: { type: Object, required: true },
+    pageId: { type: String, required: true, default: "not working fuck" },
   },
   methods: {
     start(value){
       this.pageData = copyobj(value["areas"])
-
-
       this.changeArea('full')
+
+      // Set pagename:
+      document.getElementById("input-page-name").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].title
+      document.getElementById("input-page-id").value = this.pageId == "add-page" ? "" : this.pageId
+      document.getElementById("input-path").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].path.replace(`${this.pageId}.json`, "").replace(/\//g, "\\")
     },
     changeArea(area) {
 
@@ -55,7 +59,8 @@ const editor = {
       const paths = [];
       for (const entryId in this.directory) {
         const entry = splitStringAtLast(this.directory[entryId].path, '/')[0]
-        if (!paths.includes(entry)) paths.push(entry)
+        const rehashed_path = entry.replace(/\//g, "\\")
+        if (!paths.includes(rehashed_path)) paths.push(rehashed_path)
       }
       this.pathChoices = paths.sort()
 
@@ -108,23 +113,55 @@ const editor = {
         this.pageData[this.currentArea].profile = profile
         this.currentAreaObj.profile = profile
       }
-      console.log(this.pageData)
     },
     save() {
-      const tags = document.getElementById("tags-input").value  
-      const parent = document.getElementById("parent-input").value
-      const path = document.getElementById("input-path").value
+      const tags = document.getElementById("tags-input").value.trim()
+      const parent = document.getElementById("parent-input").value.trim()
+      const path = document.getElementById("input-path").value.trim()
+      const pageName = document.getElementById("input-page-name").value.trim()
+      const pageId = document.getElementById("input-page-id").value.trim()
+
+      // Validation
+      if (pageName === "" || pageId === "" || path === ""){
+        console.log("pageName|pageId|path are required")
+        return
+      }
+
+      // if (pageId != this.pageId) {
+      //   console.log(pageId, this.pageId)
+      // }
+
+      // Remves empty preview
+      if (this.pageData.hasOwnProperty("preview")) {
+        const tabs = this.pageData.preview.tabs
+        const tabsvalue = Object.keys(tabs)
+        if (tabsvalue.length == 0 || (tabsvalue.length == 1 && tabs[tabsvalue[0]].trim() == "")) {
+          delete this.pageData.preview
+        } 
+      }
+
+      // Creates metadata.json entry
+      let metaEntry = {
+        [pageId]: {
+          "title": pageName,
+          "path": path.replace(/\\/g, "/") + pageId.replace(/\ /g, "-") + ".json",
+          "parent": parent,
+        }
+      }
 
       let newPage = {
         "areas": this.pageData,
         "tags": tags,
         "parent": parent,
-        "path": path
       }
 
-
       // emits saved page
-      this.$emit('save-page', newPage)
+      this.$emit('save-page', newPage, metaEntry)
+
+      if (isWebView) {
+        pywebview.api.savePage(path, this.pageId, newPage, metaEntry)
+      }
+      console.log("Saved Successfully")
     },
     tabNew() {
       // Checks if new tab name is empty
@@ -193,6 +230,15 @@ const editor = {
     },
     getNode(id) {
       return document.getElementById(id)
+    },
+    oninput(e) {
+      if (e.target.value.trim() == "") {
+        e.target.classList.add("invalid")
+        return
+      }
+      if (e.target.classList.contains("invalid")) {
+        e.target.classList.remove("invalid")
+      }
     }
   },
   template: `
@@ -201,18 +247,36 @@ const editor = {
       <!-- Text Input Area -->
       <div class="textbox">
         <h1>Editor</h1>
-        <!-- Path selector -->
+        
+
         <div class="path-select flex width-100 flex-align">
-            <label>Path: </label>
+
             <div class="width-100">
-              <input type="text" name="example" list="path-choices" 
-                     class="input width-100" id="input-path"
-                     placeholder="/">
-              <datalist id="path-choices">
-                <option :value="value" v-for="(value, index) in pathChoices">
-                </option>
-                
-              </datalist>
+              <table class="table width-100">
+                <tr>
+                  <td><label for="input-papge-name">Name:</label></td>
+                  <td><input class="input width-100" id="input-page-name" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
+                  <td><label for="input-page-id">Id</label></td>
+                  <td><input class="input width-100" id="input-page-id" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
+                </tr>
+
+                <!-- Path selector -->
+                <tr  >
+                  <td class="category"><label for="input-path">Path</label>:</td>
+                  <td colspan="100%">
+                    <input type="text" name="editor" list="path-choices" 
+                       class="input width-100" id="input-path"
+                       placeholder=""  @input="(event) => oninput(event)" v-on:blur="oninput">
+                    <datalist id="path-choices">
+                      <option :value="value" v-for="(value, index) in pathChoices">
+                      </option>
+                      
+                    </datalist>
+                  </td>
+                </tr>
+              </table>
+
+
             </div>
         </div>
         <!-- Textarea -->
@@ -227,11 +291,11 @@ const editor = {
         <!-- Mode buttons -->
         <span class="flex">
           <!-- <label>Mode</label> -->
-          <button class="btn btn-active" id="btn-full" @click="changeArea('full')">Full</button>
-          <button class="btn" id="btn-preview" @click="changeArea('preview')">Preview</button>
+          <button class="btn btn-active" id="btn-full" @click="changeArea('full')" type="button" >Full</button>
+          <button class="btn" id="btn-preview" @click="changeArea('preview')" type="button" >Preview</button>
         </span>
 
-        <button class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
+        <button type="button" class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
 
         <!-- Select Tab -->
         <div class="tab-options flex flex-c mt-15">
@@ -245,10 +309,10 @@ const editor = {
 
           <!-- Edit -->
           <span class="flex">
-            <button class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
-            <button class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
+            <button type="button" class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
+            <button type="button" class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
           </span>
-          <button class="btn" @click="tabDelete('delete')">Delete</button>
+          <button type="button" class="btn" @click="tabDelete('delete')">Delete</button>
         </div>
 
         <!-- Tags -->
@@ -274,8 +338,8 @@ const editor = {
                  placeholder="home">
 
           <div class="flex">
-            <button class="btn" @click="tabNew">Ok</button>
-            <button class="btn" @click="closeTabbtn('new')">Cancel</button>
+            <button type="button" class="btn" @click="tabNew">Ok</button>
+            <button type="button" class="btn" @click="closeTabbtn('new')">Cancel</button>
           </div>
         </div>       
 
@@ -287,8 +351,8 @@ const editor = {
                  placeholder="home">
 
           <div class="flex">
-            <button class="btn" @click="tabRename">Ok</button>
-            <button class="btn" @click="closeTabbtn('rename')">Cancel</button>
+            <button type="button" class="btn" @click="tabRename">Ok</button>
+            <button type="button" class="btn" @click="closeTabbtn('rename')">Cancel</button>
           </div>
         </div>       
 

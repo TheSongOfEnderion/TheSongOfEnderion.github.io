@@ -11,9 +11,7 @@ const sidebar = {
     isCurrentNav() {
       let pageId = (new URLSearchParams(window.location.search)).get('p')
       if (pageId == null || pageId == "") pageId = "home"
-      // console.log(pageId)
       return pageId
-      // return 'home'
     }
   },
   props: {

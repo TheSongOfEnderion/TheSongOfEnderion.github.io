@@ -4,12 +4,30 @@ var root; //
 
 var historyList = [];
 var globalPosition = null;
+var isWebView = false
 
+class Metadata {
+  constructor(metadata) {
+    this.metadata = metadata
+
+    this.directory = this.metadata.directory
+    this.projectTitle = this.metadata.title;
+    this.projectSubtitle = this.metadata.subtitle;
+  }
+  
+  updateDirKey(oldKey, newKey, value) {
+    if (oldKey !== newKey) {
+      delete this.metadata.directory[oldKey]
+    }
+    this.metadata.directory[newKey] = value[newKey]
+  }
+}
 
 function start() { 
   const app = Vue.createApp({
     data() {
       return {
+        metadata: {},
         directory: {},
         rerender: true,
         toggleState: false,
@@ -27,7 +45,10 @@ function start() {
     },
     async mounted() {
       // Get Metadata
+      
       const metadata = await this.fetchData(".lore/metadata.json")
+      this.metadata = new Metadata(metadata)
+      // console.log(this.metadata)  
 
       // Save key-info
       this.projectTitle = metadata.title;
@@ -58,30 +79,67 @@ function start() {
 
       setup()
 
+      console.log("Is Web view: ", isWebView)
     },
     methods: {
       async fetchData(url) {
-        try {
-          console.log("Working: ", NL_OS)
-        } catch (error) {
-          const resp = await fetch(url)
-          if (resp.status === 404) {
-            console.log("test")
-            return "Error"
-          }
-          return (await resp.json())
 
+        const resp = await fetch(url)
+        if (resp.status === 404) {
+          return "Error"
         }
-
+        return await resp.json()
       },
+      /**
+       * Reloads the page card component
+       * @param  {string} pageId id of the page to reload from directory
+       * @param  {bool}   isPopState controls the history list
+       * @return {none}  Returns nothing
+       */
       async reload(pageId, isPopState = false, savePage="") {
 
-       
         // Prevents repeated history when the same page button is clicked
         if (savePage == "") {
           if (!isPopState && pageId === historyList[globalPosition]) return;
         }
-                
+        
+        // Manipulate history back and forward
+        this.history(pageId, isPopState)
+
+        // Get metadata file
+        let isError = false;
+        let pageMeta = this.directory[pageId] || this.directory["404"];
+        if (!this.directory.hasOwnProperty(pageId)) isError = true;
+        
+        // Update Card Content        
+        if (savePage != "") {
+          // An editor reload
+          this.content = savePage
+        } else {
+          // A new page get
+          const resp = await this.fetchData(pageMeta.path);
+          if (resp == "Error") {
+            // Page is in Metadata.json but doesn't exist
+            this.content = createContentObj("The page exist in <span class=\"error\">metadata.json</span> but does not exit")
+          } else {
+            // Check if page is real or Page does not exist
+            if (pageId == "404") resp.areas.full.tabs.default = resp.areas.full.tabs.default.replace("[[page-id]]", `<span class="error">${this.getCurrentPageId(true)}</span>`)
+            this.content = this.isContentEmpty(resp)
+          }
+        }
+
+        // Update App
+        this.pageId = pageId
+        this.$forceUpdate();
+        this.pageName = pageMeta.title;   // Places here so it updates with the content at the same time
+      },
+        /**
+       * Reloads the page card component
+       * @param  {string} pageId id of the page to reload from directory
+       * @param  {bool}   isPopState controls the history list
+       * @return {none}  Returns nothing
+       */
+      history(pageId, isPopState) {
         // Deal with Global Positioning
         if (globalPosition === null) globalPosition = 0;
         else if (!isPopState) globalPosition += 1;
@@ -92,59 +150,50 @@ function start() {
         }
       
         if (!isPopState) historyList.push(pageId);
-      
-        // Get metadata file
-        let isError = false;
-        let pageMeta = this.directory[pageId] || this.directory["404"];
-        if (!this.directory.hasOwnProperty(pageId)) isError = true;
-        
-        this.pageName = pageMeta.title;
-
-        // Update Card Content
-        if (savePage == "") {
-          const resp = await this.fetchData(pageMeta.path);
-          
-          if (resp == "Error") {
-            // this.content = createContentObj(`File <span class="error">${pageId}</span> is registered in metadata.json but does not exist`);
-            this.content = createContentObj(`Page <span class="error">${pageId}</span> does not exist`);
-          } else {
-            this.content = resp
-            console.log(this.content)
-            if (this.content["areas"].hasOwnProperty("full")) {
-              const tabs = this.content["areas"]["full"].tabs
-              if (Object.keys(tabs).length === 1) {
-                const tabname = Object.keys(tabs)[0]
-                if (tabs[tabname].trim() == "") {
-                  this.content = createContentObj("The Page is empty");
-                }
-              }
-            }
-            
-          }
-
-          // if (isError) {
-          //   this.content += `\n\nPage <span class="error">${pageId}</span> does not exist.`;
-          // }
-
-        } else {
-          this.content = savePage
-          console.log("this is called")
-        }
-
-        this.pageId = pageId
-      
-        // Update App
-        this.$forceUpdate();
       },
-      getCurrentPageId() {
+
+      /**
+       * Checks if the content json is empty
+       * @param  {Object} contentObj json object GET from files
+       * @return {Object}  the same object or an empty obj
+       */
+      isContentEmpty(contentObj) {
+        if (contentObj["areas"].hasOwnProperty("full")) {
+          const tabs = contentObj["areas"]["full"].tabs
+          if (Object.keys(tabs).length === 1) {
+            const tabname = Object.keys(tabs)[0]
+            if (tabs[tabname].trim() == "") {
+              return createContentObj("The Page is empty");
+            }
+          }
+        }
+        return contentObj
+      },
+      getCurrentPageId(real=false) {
         let pageId = (new URLSearchParams(window.location.search)).get('p');
+        if (real) {
+          return pageId
+        }
         if (pageId == null || pageId == "") pageId = "home"
         if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
         return pageId
       },
-      savePage(newPage) {
+      savePage(newPage, metaEntry) {
+        const key = Object.keys(metaEntry)[0]
 
-        this.reload(this.getCurrentPageId(), false, newPage)
+        this.directory[key] = metaEntry[key]
+        if (key !== this.pageId) {
+          delete this.directory[this.pageId]
+          console.log(this.directory)
+          this.pageId = key
+          const url = new URL(window.location);  
+          url.searchParams.set("p", this.pageId);
+          history.replaceState(null, null, ' ');
+          history.pushState({}, "", url);
+        }
+        
+        this.reload(this.pageId, false, newPage)
+        console.log(this.pageId)
       }
     }
   })
@@ -175,6 +224,10 @@ function start() {
 
 
 function setup() {
+  window.addEventListener('pywebviewready',()=>   {
+    isWebView = true
+  })
+
   // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/
   window.scroll({
     top: 2500, 
@@ -831,20 +884,24 @@ const editor = {
       currentTab: "",
       currentAreaObj: {}
 
-
+      // if new page
     }
   },
   components: ['EditorTab'],
   emits: ['save-page'],
   props: {
-    directory: { type: Object, required: true }
+    directory: { type: Object, required: true },
+    pageId: { type: String, required: true, default: "not working fuck" },
   },
   methods: {
     start(value){
       this.pageData = copyobj(value["areas"])
-
-
       this.changeArea('full')
+
+      // Set pagename:
+      document.getElementById("input-page-name").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].title
+      document.getElementById("input-page-id").value = this.pageId == "add-page" ? "" : this.pageId
+      document.getElementById("input-path").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].path.replace(`${this.pageId}.json`, "").replace(/\//g, "\\")
     },
     changeArea(area) {
 
@@ -872,7 +929,8 @@ const editor = {
       const paths = [];
       for (const entryId in this.directory) {
         const entry = splitStringAtLast(this.directory[entryId].path, '/')[0]
-        if (!paths.includes(entry)) paths.push(entry)
+        const rehashed_path = entry.replace(/\//g, "\\")
+        if (!paths.includes(rehashed_path)) paths.push(rehashed_path)
       }
       this.pathChoices = paths.sort()
 
@@ -925,23 +983,55 @@ const editor = {
         this.pageData[this.currentArea].profile = profile
         this.currentAreaObj.profile = profile
       }
-      console.log(this.pageData)
     },
     save() {
-      const tags = document.getElementById("tags-input").value  
-      const parent = document.getElementById("parent-input").value
-      const path = document.getElementById("input-path").value
+      const tags = document.getElementById("tags-input").value.trim()
+      const parent = document.getElementById("parent-input").value.trim()
+      const path = document.getElementById("input-path").value.trim()
+      const pageName = document.getElementById("input-page-name").value.trim()
+      const pageId = document.getElementById("input-page-id").value.trim()
+
+      // Validation
+      if (pageName === "" || pageId === "" || path === ""){
+        console.log("pageName|pageId|path are required")
+        return
+      }
+
+      // if (pageId != this.pageId) {
+      //   console.log(pageId, this.pageId)
+      // }
+
+      // Remves empty preview
+      if (this.pageData.hasOwnProperty("preview")) {
+        const tabs = this.pageData.preview.tabs
+        const tabsvalue = Object.keys(tabs)
+        if (tabsvalue.length == 0 || (tabsvalue.length == 1 && tabs[tabsvalue[0]].trim() == "")) {
+          delete this.pageData.preview
+        } 
+      }
+
+      // Creates metadata.json entry
+      let metaEntry = {
+        [pageId]: {
+          "title": pageName,
+          "path": path.replace(/\\/g, "/") + pageId.replace(/\ /g, "-") + ".json",
+          "parent": parent,
+        }
+      }
 
       let newPage = {
         "areas": this.pageData,
         "tags": tags,
         "parent": parent,
-        "path": path
       }
 
-
       // emits saved page
-      this.$emit('save-page', newPage)
+      this.$emit('save-page', newPage, metaEntry)
+
+      if (isWebView) {
+        pywebview.api.savePage(path, this.pageId, newPage, metaEntry)
+      }
+      console.log("Saved Successfully")
     },
     tabNew() {
       // Checks if new tab name is empty
@@ -1010,6 +1100,15 @@ const editor = {
     },
     getNode(id) {
       return document.getElementById(id)
+    },
+    oninput(e) {
+      if (e.target.value.trim() == "") {
+        e.target.classList.add("invalid")
+        return
+      }
+      if (e.target.classList.contains("invalid")) {
+        e.target.classList.remove("invalid")
+      }
     }
   },
   template: `
@@ -1018,18 +1117,36 @@ const editor = {
       <!-- Text Input Area -->
       <div class="textbox">
         <h1>Editor</h1>
-        <!-- Path selector -->
+        
+
         <div class="path-select flex width-100 flex-align">
-            <label>Path: </label>
+
             <div class="width-100">
-              <input type="text" name="example" list="path-choices" 
-                     class="input width-100" id="input-path"
-                     placeholder="/">
-              <datalist id="path-choices">
-                <option :value="value" v-for="(value, index) in pathChoices">
-                </option>
-                
-              </datalist>
+              <table class="table width-100">
+                <tr>
+                  <td><label for="input-papge-name">Name:</label></td>
+                  <td><input class="input width-100" id="input-page-name" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
+                  <td><label for="input-page-id">Id</label></td>
+                  <td><input class="input width-100" id="input-page-id" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
+                </tr>
+
+                <!-- Path selector -->
+                <tr  >
+                  <td class="category"><label for="input-path">Path</label>:</td>
+                  <td colspan="100%">
+                    <input type="text" name="editor" list="path-choices" 
+                       class="input width-100" id="input-path"
+                       placeholder=""  @input="(event) => oninput(event)" v-on:blur="oninput">
+                    <datalist id="path-choices">
+                      <option :value="value" v-for="(value, index) in pathChoices">
+                      </option>
+                      
+                    </datalist>
+                  </td>
+                </tr>
+              </table>
+
+
             </div>
         </div>
         <!-- Textarea -->
@@ -1044,11 +1161,11 @@ const editor = {
         <!-- Mode buttons -->
         <span class="flex">
           <!-- <label>Mode</label> -->
-          <button class="btn btn-active" id="btn-full" @click="changeArea('full')">Full</button>
-          <button class="btn" id="btn-preview" @click="changeArea('preview')">Preview</button>
+          <button class="btn btn-active" id="btn-full" @click="changeArea('full')" type="button" >Full</button>
+          <button class="btn" id="btn-preview" @click="changeArea('preview')" type="button" >Preview</button>
         </span>
 
-        <button class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
+        <button type="button" class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
 
         <!-- Select Tab -->
         <div class="tab-options flex flex-c mt-15">
@@ -1062,10 +1179,10 @@ const editor = {
 
           <!-- Edit -->
           <span class="flex">
-            <button class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
-            <button class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
+            <button type="button" class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
+            <button type="button" class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
           </span>
-          <button class="btn" @click="tabDelete('delete')">Delete</button>
+          <button type="button" class="btn" @click="tabDelete('delete')">Delete</button>
         </div>
 
         <!-- Tags -->
@@ -1091,8 +1208,8 @@ const editor = {
                  placeholder="home">
 
           <div class="flex">
-            <button class="btn" @click="tabNew">Ok</button>
-            <button class="btn" @click="closeTabbtn('new')">Cancel</button>
+            <button type="button" class="btn" @click="tabNew">Ok</button>
+            <button type="button" class="btn" @click="closeTabbtn('new')">Cancel</button>
           </div>
         </div>       
 
@@ -1104,8 +1221,8 @@ const editor = {
                  placeholder="home">
 
           <div class="flex">
-            <button class="btn" @click="tabRename">Ok</button>
-            <button class="btn" @click="closeTabbtn('rename')">Cancel</button>
+            <button type="button" class="btn" @click="tabRename">Ok</button>
+            <button type="button" class="btn" @click="closeTabbtn('rename')">Cancel</button>
           </div>
         </div>       
 
@@ -1188,8 +1305,6 @@ const profilebox = {
   `
 }
 
-var pages = []
-
 const gotoPage = (pageId) => {
   document.getElementById("searchbox").value  = ''
 
@@ -1211,51 +1326,54 @@ const searchbox = {
     }
   },
   props: {
-    directory: { type: Object, required: true },
+    directory: { type: Object, required: true, default: {}},
   },
   watch: {
     directory: {
+      immediate: true,
+      deep: true,
       handler(value) {
+        if (isObjEmpty(value)) return
 
+        this.pages = []
 
         for (const entry in value) {
           const item = value[entry].title
-          pages.push({name: item, pageId: entry})
+          this.pages.push({name: item, pageId: entry})
         }
-
-        const searchbox = document.getElementById("searchbox")
-        searchbox.addEventListener("keydown", function(e) {
-          const val = e.target.value
-          const sugs = document.getElementById("suggestions")
-          console.log("val: ", val)
-
-          let suggestedList = []
-
-          for (const entry of pages) {
-            if (entry.name.toLowerCase().includes(val.toLowerCase().trim())) {
-              suggestedList.push(entry)
-            }
-          } 
-
-          sugs.innerHTML = ''
-
-          for (const item of suggestedList) {
-            sugs.insertAdjacentHTML('beforeend', `
-            <div class="suggestion-item" onclick="gotoPage('${item.pageId}')">
-              ${item.name}
-            </div>
-          `);
-          }
-          
-        })
       }
+    }
+  },
+  methods: {
+    suggest() {
+      const val = document.getElementById("searchbox").value.trim()
+      const sugs = document.getElementById("suggestions")
+
+      let suggestedList = []
+
+      for (const entry of this.pages) {
+        if (entry.name.toLowerCase().includes(val.toLowerCase().trim())) {
+          suggestedList.push(entry)
+        }
+      } 
+
+      sugs.innerHTML = ''
+
+      for (const item of suggestedList) {
+        sugs.insertAdjacentHTML('beforeend', `
+        <div class="suggestion-item" onclick="gotoPage('${item.pageId}')">
+          ${item.name}
+        </div>
+      `);
+      }
+      
     }
   },
   template: `
     <div class="searchbox-area">
       <input type="text" placeholder="Search.."
              class="searchbox"
-             id="searchbox" onfocusout="removeSuggestions()">
+             id="searchbox" onfocusout="removeSuggestions()" @keyup="suggest">
       <div id="suggestions"></div>
     </div>
 
@@ -1276,9 +1394,7 @@ const sidebar = {
     isCurrentNav() {
       let pageId = (new URLSearchParams(window.location.search)).get('p')
       if (pageId == null || pageId == "") pageId = "home"
-      // console.log(pageId)
       return pageId
-      // return 'home'
     }
   },
   props: {
@@ -1580,6 +1696,12 @@ const tab = {
       for (const tab of tabs) {
       if (tab.id == targetTab) {
           tab.classList.remove("hide")
+
+          // const toc = tab.getElementsByClassName("toc")
+          // if (toc) {
+          //   const toc_ = toc[0]
+          //   console.log(tab)
+          // }
           continue;
         } 
         tab.classList.add("hide");
@@ -1660,12 +1782,9 @@ const toggle = {
   },
   methods: {
     toggleArea() {
-      
       const toggleState = document.getElementById("switch").checked
       localStorage.setItem(this.uniqueId, toggleState);
       root.toggleState = toggleState
-      console.log(root.toggleState)
-
     }
   },
   template: `

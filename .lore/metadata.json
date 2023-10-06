@@ -32,12 +32,6 @@
       "path": "content/story.json",
       "parent": "geh"
     },
-
-    "ethan-morales": {
-      "title": "Ethan Morales",
-      "path": "content/story/tboah/characters/protagonist/ethan-morales.json",
-      "parent": "tboah-characters"
-    },
     "karthan-morales": {
       "title": "Karthan Morales",
       "path": "content/story/tboah/characters/villains/karthan-morales.json",
@@ -173,9 +167,9 @@
       "path": "content/story/tboah/characters/e-class/amihan-villanueva.json",
       "parent": "tboah-characters"
     },
-    "niña-bach": {
-      "title": "Niña Bach",
-      "path": "content/story/tboah/characters/e-class/niña-bach.json",
+    "ni\u00c3\u00b1a-bach": {
+      "title": "Ni\u00c3\u00b1a Bach",
+      "path": "content/story/tboah/characters/e-class/ni\u00c3\u00b1a-bach.json",
       "parent": "tboah-characters"
     },
     "ancestor-parents": {
@@ -279,7 +273,7 @@
       "parent": "eotoq-characters"
     },
     "eotoq-chapter-1": {
-      "title": "Chapter 1 — The Ordinary Quill (1)",
+      "title": "Chapter 1 \u00e2\u20ac\u201d The Ordinary Quill (1)",
       "path": "content/story/eotoq/chapters/eotoq-chapter-1.json",
       "parent": "eotoq"
     },
@@ -342,6 +336,11 @@
       "title": "Lady of the Ashen Shroud",
       "path": "content/lore/beings/lady-of-the-ashen-shroud.json",
       "parent": "beings"
+    },
+    "ethan-moraless": {
+      "title": "Ethan Morales",
+      "path": "content/story/tboah/characters/protagonist/ethan-moraless.json",
+      "parent": ""
     }
   }
 }

@@ -25,6 +25,12 @@ const tab = {
       for (const tab of tabs) {
       if (tab.id == targetTab) {
           tab.classList.remove("hide")
+
+          // const toc = tab.getElementsByClassName("toc")
+          // if (toc) {
+          //   const toc_ = toc[0]
+          //   console.log(tab)
+          // }
           continue;
         } 
         tab.classList.add("hide");
