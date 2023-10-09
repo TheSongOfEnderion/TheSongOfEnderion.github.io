@@ -9,6 +9,8 @@ var isCurrentPageTemplate = false;
 
 var productionMode = false
 
+var globalStorage = {}
+
 class Metadata {
   constructor(metadata) {
     this.metadata = metadata;
@@ -134,7 +136,22 @@ function start() {
           this.content = savePage;
         } else {
           // A new page get
-          const resp = await fetchData(pageMeta.path);
+          let resp = ""
+          if (isWebView == false) {
+            if (globalStorage.hasOwnProperty(pageId)) {
+              resp = globalStorage[pageId]
+            } else {
+              resp = await fetchData(pageMeta.path);
+              globalStorage[pageId] = resp;
+            }
+          } else {
+            resp = await fetchData(pageMeta.path);
+          }
+          
+          console.log(globalStorage)
+
+          
+
           if (resp == "Error") {
             // Page is in Metadata.json but doesn't exist
             this.content = createContentObj("The page exist in <span class=\"error\">metadata.json</span> but does not exit");
