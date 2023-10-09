@@ -53,7 +53,7 @@
     "giselle-iridao": {
       "title": "Giselle Iridao",
       "path": "content/story/tboah/characters/deuteragonist/giselle-iridao.json",
-      "parent": "",
+      "parent": "tboah-characters",
       "tags": ""
     },
     "eltia-axolin": {
@@ -420,6 +420,48 @@
       "title": "Templates",
       "path": "templates/template.json",
       "parent": "",
+      "tags": ""
+    },
+    "romel-campbell": {
+      "title": "Romel Campbell",
+      "path": "content/story/tboah/characters/a-class/romel-campbell.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "reginald-guillory": {
+      "title": "Reginald Guillory",
+      "path": "content/story/tboah/characters/e-class/reginald-guillory.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "benjamin-sanchez": {
+      "title": "Benjamin Sanchez",
+      "path": "content/story/tboah/characters/e-class/benjamin-sanchez.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "leticia-lewinne": {
+      "title": "Leticia Lewinne",
+      "path": "content/story/tboah/characters/e-class/leticia-lewinne.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "maurish-serrano": {
+      "title": "Maurish Serrano",
+      "path": "content/story/tboah/characters/e-class/maurish-serrano.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "isko-devera": {
+      "title": "Isko Devera",
+      "path": "content/story/tboah/characters/e-class/isko-devera.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "the-white-troupe": {
+      "title": "The White Troupe",
+      "path": "content/story/tie/the-white-troupe.json",
+      "parent": "tie",
       "tags": ""
     }
   },

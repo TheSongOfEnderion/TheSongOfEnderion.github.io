@@ -855,7 +855,12 @@ const card = {
           line = `<li>${line.replace("* ", "").trim()}</li>`;
         }
 
-        // Renders List
+        const list2 = line.match(/^\- /);
+        if (list2) {
+          line = `<li>${line.replace("- ", "").trim()}</li>`;
+        }
+
+        // Renders quote
         const quote = line.match(/^\> /);
         if (quote) {
           line = `<blockquote>${line.replace("> ", "").replace(' - ', '<br> - ').trim()}</blockquote>`;
