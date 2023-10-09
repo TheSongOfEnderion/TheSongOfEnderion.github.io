@@ -16,7 +16,6 @@ html {
   /* Improve consistency of default fonts in all browsers. (https://github.com/sindresorhus/modern-normalize/issues/3) */
   font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
   line-height: 1.15; /* 1. Correct the line height in all browsers. */
-  -webkit-text-size-adjust: 100%; /* 2. Prevent adjustments of font size after orientation changes in iOS. */
   -moz-tab-size: 4; /* 3. Use a more readable tab size (opinionated). */
   -o-tab-size: 4;
      tab-size: 4; /* 3 */
@@ -314,20 +313,57 @@ summary {
   padding: 10px;
   margin-bottom: 10px;
   border-radius: 10px;
-  background-color: #F5F5F5;
+  background-color: #f8fbff;
   font-size: 13px;
 }
 .breadcrumbs .button {
-  color: rgba(37, 37, 37, 0.7);
+  color: rgba(37, 37, 37, 0.9);
 }
 
 @media screen and (max-width: 500px) {
   .breadcrumbs {
-    font-size: 10px;
+    font-size: 12px;
     padding: 5px;
     margin-bottom: 5px;
   }
 }
+.btn {
+  padding: 5px 10px 5px 10px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+  background-color: #4584FF;
+  color: white;
+  transition: 0.1s linear;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
+  cursor: pointer;
+  font-weight: 100 !important;
+  font-style: normal;
+  font-size: 14px;
+}
+.btn:hover {
+  transform: scale(1.1);
+}
+.btn:active {
+  transform: scale(1);
+}
+
+.btn-active {
+  background-color: #252525 !important;
+}
+
+.btn-blue {
+  background-color: #4584FF !important;
+  color: white;
+}
+
+.btn-red {
+  background-color: #191919 !important;
+  color: white;
+}
+
 .card-container {
   display: flex;
   height: 100%;
@@ -376,10 +412,6 @@ summary {
   display: flex;
   align-items: baseline;
 }
-.card #card-content .header1 a {
-  height: -moz-fit-content;
-  height: fit-content;
-}
 
 #title {
   margin: 0px;
@@ -391,9 +423,13 @@ summary {
   line-height: 40px;
 }
 
+.no-scroll {
+  overflow: hidden;
+}
+
 @media screen and (max-width: 900px) {
   .card-container {
-    margin-left: 40px;
+    margin-left: 50px;
   }
   #title {
     font-size: 2.5em;
@@ -425,7 +461,7 @@ summary {
   width: fit-content;
   padding: 10px;
   border-radius: 5px;
-  background-color: #F5F5F5;
+  background-color: #f8fbff;
 }
 .toc .toc-title {
   font-weight: bold;
@@ -449,8 +485,68 @@ summary {
   margin-left: 5em !important;
 }
 
-#side-toc {
-  width: 250px;
+.side-toc {
+  width: 150px;
+  position: fixed;
+  top: 120px;
+  right: 50px;
+  z-index: 90000;
+  padding: 5px;
+  background-color: transparent;
+}
+.side-toc h1 {
+  margin-bottom: 5px !important;
+  text-align: start !important;
+  padding: 1px 3px 1px 3px !important;
+}
+.side-toc a {
+  font-size: 12px;
+  color: #191919;
+}
+.side-toc #history-content {
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (max-width: 1100px) {
+  .side-toc {
+    display: none;
+  }
+}
+.confirmbox {
+  width: 100%;
+  height: 100%;
+  z-index: 9999999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(25, 25, 25, 0.2);
+  position: absolute;
+}
+.confirmbox .box {
+  width: 200px;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+}
+.confirmbox .box .buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.dropdown {
+  width: 100%;
+  font-size: 14px;
+  border: 1px solid rgba(37, 37, 37, 0.2);
+  padding: 4px;
+  border-radius: 3px;
+}
+.dropdown:focus {
+  outline: 2px solid #4584FF;
 }
 
 #editmode {
@@ -458,47 +554,58 @@ summary {
   width: fit-content;
   height: 100%;
 }
+#editmode h1 {
+  font-size: 1.4em;
+  font-family: cambria;
+  font-weight: 100;
+}
 
-.button--edit {
-  border: none;
-  border-radius: 5px;
-  background-color: #4584FF;
-  color: white;
-  transition: 0.1s linear;
+.btn--dark:hover {
+  outline: 2px solid white;
+  transform: scale(1);
+}
+
+.btn--red {
+  background-color: #F44336 !important;
+}
+
+.template-list {
+  width: 100%;
   -webkit-user-select: none;
      -moz-user-select: none;
           user-select: none;
-  cursor: pointer;
-  font-weight: 100 !important;
-  font-style: normal;
-  font-size: 14px;
-  margin-bottom: 10px;
 }
-.button--edit:hover {
-  outline: 2px solid white;
+.template-list h2 {
+  font-size: 1.4em;
+  font-family: cambria;
+  font-weight: 100;
+  margin-bottom: 3px;
 }
-.button--edit:active {
-  background-color: rgba(69, 132, 255, 0.7);
+.template-list select {
+  padding: 10px;
+  width: 100%;
+  border: none;
+  color: white;
+  background-color: #252525;
 }
-
-.button--edit-red {
-  background-color: #F44336 !important;
+.template-list select::-webkit-scrollbar {
+  width: 0.5em;
 }
-.button--edit-red:hover {
-  outline: 2px solid white;
+.template-list select::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
 }
-.button--edit-red:active {
-  background-color: rgba(244, 67, 54, 0.7) !important;
+.template-list select::-webkit-scrollbar-thumb {
+  background-color: #4584FF;
 }
 
 .editor-container {
   position: fixed;
-  background-color: rgba(0, 0, 0, 0.36);
   height: 100%;
   width: 100%;
-  z-index: 999999999;
   display: grid;
   place-items: center;
+  background-color: rgba(0, 0, 0, 0.36);
+  z-index: 999999999;
 }
 
 #editor {
@@ -521,7 +628,7 @@ summary {
 
 #textarea {
   width: 100%;
-  height: 90%;
+  height: 84%;
   border: none;
   outline: none;
   margin-top: 20px;
@@ -539,10 +646,6 @@ summary {
   background-color: #4584FF;
 }
 
-.boxes {
-  border-radius: 3px;
-}
-
 .hr {
   margin: 10px 0px;
   border: 1px solid rgba(37, 37, 37, 0.2);
@@ -553,34 +656,9 @@ summary {
   border-left: 1px solid rgba(37, 37, 37, 0.2);
   padding-left: 10px;
 }
-.editor-options #tab-select {
-  width: 100%;
-  font-size: 14px;
-  border: 1px solid rgba(37, 37, 37, 0.2);
-  padding: 4px;
-  border-radius: 3px;
-}
-.editor-options #tab-select:focus {
-  outline: 2px solid #4584FF;
-}
 .editor-options .tab-options h1 {
   margin: 0px;
   font-size: 15px;
-}
-
-.input {
-  outline: none;
-  border: 1px solid rgba(37, 37, 37, 0.2);
-  padding: 4px;
-  font-size: 12px;
-  border-radius: 3px;
-}
-.input:focus {
-  outline: 2px solid #4584FF;
-}
-
-.mt-15 {
-  margin-top: 15px;
 }
 
 .path-select {
@@ -596,41 +674,22 @@ summary {
   outline: 2px solid #F44336;
 }
 
-.btn {
-  padding: 5px 10px 5px 10px;
-  border: none;
-  border-radius: 5px;
-  width: 100%;
-  background-color: #4584FF;
-  color: white;
-  transition: 0.1s linear;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
-  cursor: pointer;
-  font-weight: 100 !important;
-  font-style: normal;
-  font-size: 14px;
+.checkbox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 5px;
 }
-.btn:hover {
-  transform: scale(1.1);
+.checkbox input {
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  accent-color: #4584FF;
 }
-.btn:active {
-  transform: scale(1);
-}
-
-.btn-active {
-  background-color: #252525 !important;
-}
-
-.btn-blue {
-  background-color: #4584FF !important;
-  color: white;
-}
-
-.btn-red {
-  background-color: #191919 !important;
-  color: white;
+.checkbox span {
+  vertical-align: middle;
+  color: #727272;
+  font-size: 12px;
 }
 
 @media screen and (max-width: 1000px) {
@@ -638,11 +697,26 @@ summary {
     width: 80vw;
   }
 }
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 800px) {
   #editor {
     width: 100vw;
   }
 }
+.input {
+  outline: none;
+  border: 1px solid rgba(37, 37, 37, 0.2);
+  padding: 4px;
+  font-size: 12px;
+  border-radius: 3px;
+}
+.input:focus {
+  outline: 2px solid #4584FF;
+}
+
+.boxes {
+  border-radius: 3px;
+}
+
 .profilebox {
   float: right;
   display: block;
@@ -652,7 +726,7 @@ summary {
   padding: 8px;
   margin-left: 20px;
   margin-bottom: 10px;
-  background-color: #F5F5F5;
+  background-color: #f8fbff;
   font-size: 12px;
   transition: 0.5s linear;
 }
@@ -795,20 +869,6 @@ summary {
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-.editor-bar {
-  background-color: #252525;
-  height: 100%;
-  width: 40px;
-  padding: 0px;
-  border-right: 1px solid rgba(255, 255, 255, 0.12);
-  padding-top: 5px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 10px;
-  align-items: flex-start;
-}
-
 .titles {
   margin: 10px 3px;
 }
@@ -905,14 +965,13 @@ summary {
 }
 .button--sidebaredit {
   width: 100%;
+  padding: 2px 5px;
+  border: none;
+  border-radius: 4px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
-  margin-right: -5px;
-  padding: 2px 5px;
-  border: none;
-  border-radius: 4px;
   background-color: transparent;
   color: white;
   font-size: 1.3em;
@@ -936,6 +995,54 @@ summary {
   fill: rgba(255, 255, 255, 0.3);
 }
 
+.editor-bar {
+  height: 100%;
+  width: 40px;
+  padding: 0px;
+  padding-top: 5px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background-color: #252525;
+}
+
+.warning {
+  position: relative;
+  transition: all 0.4s ease;
+}
+.warning .content {
+  position: absolute;
+  right: 0px;
+  top: 30px;
+  width: -moz-fit-content;
+  width: fit-content;
+  font-size: 14px;
+  margin: 10px 0px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background-color: #4584FF;
+  color: white;
+}
+
+.spoiler {
+  background-color: #252525 !important;
+}
+
+@media screen and (max-width: 500px) {
+  .warning {
+    width: 50px;
+    top: -40px;
+    right: 10px;
+    position: absolute;
+  }
+  .warning span {
+    font-size: 12px !important;
+    width: 90px !important;
+    text-align: center;
+  }
+}
 .button {
   padding: 3px 5px 3px 5px;
   margin-right: 5px;
@@ -981,11 +1088,13 @@ summary {
   color: #4584FF;
   text-decoration: none;
   font-weight: normal;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
 }
 
 .toggle {
-  height: 100%;
-  width: 40px;
+  width: 26px;
   display: flex;
 }
 .toggle input[type=checkbox] {
@@ -996,9 +1105,9 @@ summary {
 .toggle label {
   cursor: pointer;
   text-indent: -9999px;
-  width: 40px;
+  width: 26px;
   height: 20px;
-  background: #252525;
+  border: 2px solid rgba(255, 255, 255, 0.3);
   display: block;
   border-radius: 4px;
   position: relative;
@@ -1006,23 +1115,22 @@ summary {
 .toggle label:after {
   content: "";
   position: absolute;
-  top: 4px;
-  left: 4px;
-  width: 20px;
-  height: 12px;
-  background: #191919;
-  border-radius: 4px;
+  top: 3px;
+  left: 2px;
+  width: 13px;
+  height: 11px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
   transition: 0.3s;
 }
-.toggle input:checked + label {
-  background: #4584FF;
-}
 .toggle input:checked + label:after {
-  left: calc(100% - 4px);
+  left: calc(100% - 2px);
   transform: translateX(-100%);
+  background: #4584FF;
 }
 .toggle label:active:after {
   width: width30px;
+  border: 2px solid #4584FF;
 }
 
 * {
@@ -1035,7 +1143,8 @@ summary {
 
 html {
   overflow-x: hidden;
-  margin-right: calc(-1 * (100vw - 100%));
+  overflow-y: scroll;
+  margin-right: calc(-1 * (100vw - 100%)) !important;
 }
 
 body {
@@ -1110,4 +1219,8 @@ body::-webkit-scrollbar-thumb {
 .float-bottom {
   position: absolute;
   bottom: 0;
+}
+
+.mt-15 {
+  margin-top: 15px;
 }/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,67 @@
+@use '../../../css/vars' as *;
+
+$sidebar-btn--color: $blue;
+
+.button--sidebaredit {
+  // Block
+  width: 100%;
+
+  padding: 2px 5px;
+  border: none;
+  border-radius: 4px;
+
+  // Layout
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0; 
+  
+  // Element
+  background-color: transparent;
+  color: white;
+  font-size: 1.3em;
+ 
+  // Misc
+  cursor: pointer;
+  z-index: 999;
+  transition: 0.1s ease-in-out;
+  
+  // Effect
+  &:hover {
+    transform: scale(1.1);
+    svg {
+      fill: rgba($blue, 1);
+    }
+  }
+  &:active, :focus {
+    transform: scale(0.9);
+  }
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  svg {
+    fill: rgba(white, 0.30);
+  }
+}
+
+
+
+.editor-bar {
+  // Block;
+  height: 100%;
+  width: 40px;
+  padding: 0px;
+  padding-top: 5px;
+  border-right: 1px solid rgba(white, 0.12);
+
+  // Layout
+  display: flex;
+  flex-direction: column;
+  // justify-content: center;
+  align-items: center;
+  gap: 10px;
+
+  // Element
+  background-color: $dark; 
+}

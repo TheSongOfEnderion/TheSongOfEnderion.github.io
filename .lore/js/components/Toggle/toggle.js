@@ -6,11 +6,12 @@ const toggle = {
     }
   },
   props: {
-    projectTitle: { type: String, required: true }
+    projectTitle: { required: true }
   },
   watch: {
     projectTitle: {
       handler(value) {
+        if (typeof value === undefined) return
         this.uniqueId = this.projectTitle.toLowerCase().trim().replace(/\s/g, "-")+"-storage"
 
         if (localStorage.getItem(this.uniqueId) === null) {
@@ -33,9 +34,9 @@ const toggle = {
     }
   },
   template: `
-    <span class="toggle">
+    <div class="toggle">
       <input type="checkbox" id="switch" @click="toggleArea"/>
       <label for="switch">Toggle</label>
-    </span>
+    </div>
   `
 }

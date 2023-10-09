@@ -1,0 +1,13 @@
+@use '../../../css/vars' as *;
+
+.dropdown {
+  width: 100%;
+  font-size: 14px;
+  border: 1px solid rgba($dark, 20%);
+  padding: 4px;
+  border-radius: 3px;
+  &:focus {
+    outline: 2px solid $blue;
+  }
+
+}

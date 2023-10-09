@@ -1,0 +1,14 @@
+@use '../../../css/vars' as *;
+
+.input {
+  outline: none;
+  border: 1px solid rgba($dark, 20%);
+  // background-color: rgba($blue, 19%);
+  padding: 4px;
+  font-size: 12px;
+  border-radius: 3px;
+
+  &:focus {
+    outline: 2px solid $blue;
+  }
+}

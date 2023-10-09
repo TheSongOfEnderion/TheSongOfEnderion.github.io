@@ -8,6 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 
+
 function findFilesInDirectory(directoryPath, extension) {
   const scssFiles = [];
 
@@ -142,5 +143,48 @@ ${composablesContent}
 // ==================
 ${components}
 `
+const options = {
+  "js": {
+      "mangleClassNames": true,
+      "removeUnusedVariables": true,
+      "removeConsole": false,
+      "removeUselessSpread": true
+  },
+  "img": {
+      "maxSize": 4096
+  },
+  "html": {
+      "removeComments": true,
+      "removeCommentsFromCDATA": true,
+      "removeCDATASectionsFromCDATA": true,
+      "collapseWhitespace": true,
+      "collapseBooleanAttributes": true,
+      "removeAttributeQuotes": true,
+      "removeRedundantAttributes": true,
+      "useShortDoctype": true,
+      "removeEmptyAttributes": true,
+      "removeEmptyElements": false,
+      "removeOptionalTags": true,
+      "removeScriptTypeAttributes": true,
+      "removeStyleLinkTypeAttributes": true,
+      "minifyJS": true,
+      "minifyCSS": true
+  },
+  "css": {
+      "compatibility": "*"
+  }
+}
+
+// minify.js(newIndex, options).then((data) => {
+//   // console.log(data)
+//   fs.writeFileSync(`./.lore/js/index.js`, data);
+// }) 
+ 
+
+ 
 fs.writeFileSync(`./.lore/js/index.js`, newIndex);
-console.log("Done adding components to app")
+
+
+
+console.log("Done adding components to app")  
+

@@ -47,6 +47,34 @@
 
 
 
-#side-toc {
-  width: 250px;
+.side-toc {
+  width: 150px;
+  position: fixed;
+  top: 120px;
+  right: 50px;
+  z-index: 90000;
+  padding: 5px;
+  h1 {
+    margin-bottom: 5px !important;
+    text-align:   start !important;
+    padding: 1px 3px 1px 3px !important;
+  }
+  a {
+    font-size: 12px;
+    color: $black;
+
+  }
+
+  #history-content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  background-color: transparent;
+}
+
+@media screen and (max-width: 1100px) {
+  .side-toc {
+    display: none;
+  }
 }

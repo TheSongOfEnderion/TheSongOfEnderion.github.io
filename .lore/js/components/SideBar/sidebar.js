@@ -3,7 +3,7 @@ const sidebar = {
   data() {
     return {
       navs: {},
-      test: "Asd",
+
     }
   },
   components: ['Searchbox', 'Toggle', 'Editbar'],
@@ -15,20 +15,21 @@ const sidebar = {
     }
   },
   props: {
-    projectTitle: { type: String, default: "Default" },
-    projectSubtitle: { type: String, default: "Default Subtitle" },
-    directory: { type: Object, required: true },
+    metadata: { type: Object, required: true},
     rerender: { type: Boolean, default: true }
   },
   watch: {
-    directory: {
-      async handler(value) {
+    metadata: {
+    immediate: true,
+    deep: true,
+    async handler(value) {
         const resp = await (fetch("assets/nav.md"))
         if (resp.status === 404) {
           console.log("Nav not found")
           return
         }
-    
+
+
         const navs = (await resp.text()).trim().split("\n")
         let lastNav = ""
         for (const nav of navs) {
@@ -37,13 +38,13 @@ const sidebar = {
           
           // if has subnav
           if (newnav.startsWith("- ")) {
-            this.navs[lastNav]['subnav'][newnav] = autoLink(nav.replace(/\-\s/, ''), this.directory)
+            this.navs[lastNav]['subnav'][newnav] = autoLink(nav.replace(/\-\s/, ''), this.metadata.directory)
             continue
           }
           
           // if No subnav
           this.navs[newnav] = {
-            main: autoLink(nav, this.directory),
+            main: autoLink(nav, this.metadata.directory),
             subnav: {}
           }
           lastNav = newnav
@@ -82,32 +83,31 @@ const sidebar = {
         this.pos.style.left = "-500px" 
         this.card.style.marginLeft = "0px"
       }
-    }
+    },
   },
   template: `
   
   <div class="sidebar" v-click-outside="hidesidebar">
 
-    <div class="editor-bar">
-      <Sidebarbtn></Sidebarbtn>
-      <SidebarEdit></SidebarEdit>
-    </div>  
+
+    <SidebarEdit :projectTitle="metadata.projectTitle"></SidebarEdit>
+
  
 
     <div class="user" id="sidebarobj" style="left: 0px;">
-
-      <EditMenu/>
+      
+      <EditMenu :metadata="metadata" v-if="rerender"/>
 
       <div id="navigation">
         <button class="close" @click="closeSidebar">✕</button>
         <!-- Titles section -->
         <div class="titles">
-          <h1 class="title">{{ projectTitle }}</h1>
-          <h2 class="subtitle">{{ projectSubtitle }}</h2>
+          <h1 class="title">{{ metadata.projectTitle }}</h1>
+          <h2 class="subtitle">{{ metadata.projectSubtitle }}</h2>
         </div>
         <!-- Search Box -->
-        <div class="inputs">
-        <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
+      <div class="inputs">
+      <Searchbox :directory="metadata.directory"/> 
         </div>
         
         <!-- Navigation Links -->

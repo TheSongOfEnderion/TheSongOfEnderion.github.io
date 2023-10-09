@@ -15,6 +15,13 @@ const tab = {
     this.groupclass = makeid(6)
     this.buttonclass = makeid(6)
 
+    // const tabs = document.getElementsByClassName("tab")
+    // for (let tab of tabs) {
+    //   if (!tab.classList.contains("hide")) {
+    //     console.log(tab)
+    //   }
+    // }
+
   },
   methods: {
 
@@ -29,7 +36,8 @@ const tab = {
           // const toc = tab.getElementsByClassName("toc")
           // if (toc) {
           //   const toc_ = toc[0]
-          //   console.log(tab)
+          //   document.getElementById("side-toc").innerHTML = toc_.innerHTML
+          //   console.log(toc_)
           // }
           continue;
         } 

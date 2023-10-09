@@ -15,13 +15,13 @@
   // @include shadow;
 
   .button {
-    color: rgba($dark, 70%);
+    color: rgba($dark, 90%);
   }
 }
 
 @media screen and (max-width: 500px) {
   .breadcrumbs {
-    font-size: 10px;
+    font-size: 12px;
     padding: 5px;
     margin-bottom: 5px;
   }

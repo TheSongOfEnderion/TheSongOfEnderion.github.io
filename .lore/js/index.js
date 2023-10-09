@@ -4,38 +4,64 @@ var root; //
 
 var historyList = [];
 var globalPosition = null;
-var isWebView = false
+var isWebView = false;
+var isCurrentPageTemplate = false;
 
 class Metadata {
   constructor(metadata) {
-    this.metadata = metadata
+    this.metadata = metadata;
 
-    this.directory = this.metadata.directory
+    this.directory = this.metadata.directory;
+    this.templates = this.metadata.templates;
     this.projectTitle = this.metadata.title;
     this.projectSubtitle = this.metadata.subtitle;
+
+    // Set Metadata
+    document.getElementsByTagName("title")[0].innerText = this.projectTitle;
   }
-  
-  updateDirKey(oldKey, newKey, value) {
+
+  updateDirKey(oldKey, newKey, metaEntry) {
     if (oldKey !== newKey) {
-      delete this.metadata.directory[oldKey]
+      delete this.metadata.directory[oldKey];
     }
-    this.metadata.directory[newKey] = value[newKey]
+    this.metadata.directory[newKey] = metaEntry[newKey];
+    this.updateLink(newKey);
+  }
+
+  deleteDirkey(key) {
+    delete this.metadata.directory[key];
+  }
+
+  updateLink(newKey) {
+    const url = new URL(window.location);
+    url.searchParams.set("p", newKey);
+    history.replaceState(null, null, ' ');
+    history.pushState({}, "", url);
+  }
+
+  updateTemplate(oldKey, newKey) {
+    
+
+    if (this.metadata.templates.includes(oldKey)) {
+      const index = this.metadata.templates.indexOf(oldKey);
+      this.metadata.templates[index] = newKey
+    } else {
+      this.metadata.templates.push(newKey)
+    }
+
+    
   }
 }
 
-function start() { 
+function start() {
   const app = Vue.createApp({
     data() {
       return {
-        metadata: {},
+        metadata: { directory: {} },
         directory: {},
         rerender: true,
         toggleState: false,
 
-        // Sidebar
-        projectTitle: "",
-        projectSubtitle: "",
-        
         // Card
         content: {},
         pageName: "",
@@ -45,110 +71,105 @@ function start() {
     },
     async mounted() {
       // Get Metadata
-      
-      const metadata = await this.fetchData(".lore/metadata.json")
-      this.metadata = new Metadata(metadata)
-      // console.log(this.metadata)  
-
-      // Save key-info
-      this.projectTitle = metadata.title;
-      this.projectSubtitle = metadata.subtitle;
-      document.getElementsByTagName("title")[0].innerText = this.projectTitle;
+      const metadata = await fetchData(".lore/metadata.json");
+      this.metadata = new Metadata(metadata);
 
       // Get Directory
-      this.directory = metadata.directory
-      
+      this.directory = metadata.directory;
+
       // Get query id
       let pageId = this.getCurrentPageId();
 
       // Loads page
-      this.reload(pageId)
+      this.reload(pageId);
 
       // Setup forward and backward handler using johanholmerin's code
       window.addEventListener('forward', event => {
-        if (globalPosition+1 < historyList.length) globalPosition++
-        this.reload(historyList[globalPosition], true)
-        console.log(event)
+        if (globalPosition + 1 < historyList.length) globalPosition++;
+        this.reload(historyList[globalPosition], true);
       });
 
       window.addEventListener('back', event => {
-        if (globalPosition !== 0) globalPosition--
-        this.reload(historyList[globalPosition], true)
-        console.log(event)
+        if (globalPosition !== 0) globalPosition--;
+        this.reload(historyList[globalPosition], true);
       });
 
-      setup()
-
-      console.log("Is Web view: ", isWebView)
+      setup();
     },
     methods: {
-      async fetchData(url) {
 
-        const resp = await fetch(url)
-        if (resp.status === 404) {
-          return "Error"
-        }
-        return await resp.json()
-      },
       /**
        * Reloads the page card component
        * @param  {string} pageId id of the page to reload from directory
        * @param  {bool}   isPopState controls the history list
        * @return {none}  Returns nothing
        */
-      async reload(pageId, isPopState = false, savePage="") {
+      async reload(pageId, isPopState = false, savePage = "") {
 
         // Prevents repeated history when the same page button is clicked
         if (savePage == "") {
           if (!isPopState && pageId === historyList[globalPosition]) return;
         }
-        
+
         // Manipulate history back and forward
-        this.history(pageId, isPopState)
+        this.history(pageId, isPopState);
 
         // Get metadata file
-        let isError = false;
         let pageMeta = this.directory[pageId] || this.directory["404"];
-        if (!this.directory.hasOwnProperty(pageId)) isError = true;
-        
+
         // Update Card Content        
         if (savePage != "") {
           // An editor reload
-          this.content = savePage
+          this.content = savePage;
         } else {
           // A new page get
-          const resp = await this.fetchData(pageMeta.path);
+          const resp = await fetchData(pageMeta.path);
           if (resp == "Error") {
             // Page is in Metadata.json but doesn't exist
-            this.content = createContentObj("The page exist in <span class=\"error\">metadata.json</span> but does not exit")
+            this.content = createContentObj("The page exist in <span class=\"error\">metadata.json</span> but does not exit");
           } else {
             // Check if page is real or Page does not exist
-            if (pageId == "404") resp.areas.full.tabs.default = resp.areas.full.tabs.default.replace("[[page-id]]", `<span class="error">${this.getCurrentPageId(true)}</span>`)
-            this.content = this.isContentEmpty(resp)
+            if (pageId == "404" || !this.directory.hasOwnProperty(pageId)) {
+              pageId = this.getCurrentPageId(true);
+              resp.areas.full.tabs.default = resp.areas.full.tabs.default.replace("[[page-id]]", `<span class="error">${pageId}</span>`);
+            }
+            this.content = this.isContentEmpty(resp);
           }
         }
+        
+        isCurrentPageTemplate = this.metadata.templates.includes(pageId) ? true : false;
 
         // Update App
-        this.pageId = pageId
+        this.pageId = pageId;
         this.$forceUpdate();
         this.pageName = pageMeta.title;   // Places here so it updates with the content at the same time
+        
+
+        const side = document.getElementById("history-content")
+        let sidehtml = ``
+        for (let i = historyList.length - 1; i >= 0; i--) {
+          const page = historyList[i]
+          sidehtml += `<a class="button button--toc H1" onclick="changePage('${page}')">${this.metadata.directory[page].title}</a>`
+        }
+        side.innerHTML = sidehtml
+
       },
-        /**
-       * Reloads the page card component
-       * @param  {string} pageId id of the page to reload from directory
-       * @param  {bool}   isPopState controls the history list
-       * @return {none}  Returns nothing
-       */
+      /**
+     * Reloads the page card component
+     * @param  {string} pageId id of the page to reload from directory
+     * @param  {bool}   isPopState controls the history list
+     * @return {none}  Returns nothing
+     */
       history(pageId, isPopState) {
         // Deal with Global Positioning
         if (globalPosition === null) globalPosition = 0;
         else if (!isPopState) globalPosition += 1;
-      
+
         // Clear history before the latest new page
         if (!isPopState && globalPosition >= 0 && globalPosition < historyList.length) {
           historyList.length = globalPosition;
         }
-      
+
         if (!isPopState) historyList.push(pageId);
       },
 
@@ -159,41 +180,49 @@ function start() {
        */
       isContentEmpty(contentObj) {
         if (contentObj["areas"].hasOwnProperty("full")) {
-          const tabs = contentObj["areas"]["full"].tabs
+          const tabs = contentObj["areas"]["full"].tabs;
           if (Object.keys(tabs).length === 1) {
-            const tabname = Object.keys(tabs)[0]
+            const tabname = Object.keys(tabs)[0];
             if (tabs[tabname].trim() == "") {
               return createContentObj("The Page is empty");
             }
           }
         }
-        return contentObj
+        return contentObj;
       },
-      getCurrentPageId(real=false) {
+      getCurrentPageId(real = false) {
         let pageId = (new URLSearchParams(window.location.search)).get('p');
         if (real) {
-          return pageId
+          return pageId;
         }
-        if (pageId == null || pageId == "") pageId = "home"
-        if (!this.directory.hasOwnProperty(pageId)) pageId = "404"
-        return pageId
+        if (pageId == null || pageId == "") pageId = "home";
+        if (!this.directory.hasOwnProperty(pageId)) pageId = "404";
+        return pageId;
       },
-      savePage(newPage, metaEntry) {
-        const key = Object.keys(metaEntry)[0]
+      savePage(path, newPage, metaEntry) {
+        const key = getKey(metaEntry)[0];
+        this.metadata.updateDirKey(this.pageId, key, metaEntry);
 
-        this.directory[key] = metaEntry[key]
-        if (key !== this.pageId) {
-          delete this.directory[this.pageId]
-          console.log(this.directory)
-          this.pageId = key
-          const url = new URL(window.location);  
-          url.searchParams.set("p", this.pageId);
-          history.replaceState(null, null, ' ');
-          history.pushState({}, "", url);
+        if (isCurrentPageTemplate == true) {
+          this.metadata.updateTemplate(this.pageId, key)
+          this.pageId = key;
         }
-        
-        this.reload(this.pageId, false, newPage)
-        console.log(this.pageId)
+
+        if (isWebView) {
+          pywebview.api.savePage(this.pageId, newPage, metaEntry, isCurrentPageTemplate);
+          
+          
+        }
+        this.pageId = key;
+        this.reload(this.pageId, false, newPage);
+      },
+      deletePage() {
+        this.metadata.deleteDirkey(this.pageId);
+        changePage("home");
+
+        if (isWebView) {
+          pywebview.api.deletePage(this.pageId);
+        }
       }
     }
   })
@@ -215,63 +244,54 @@ function start() {
     },
   };
 
-  app.directive("click-outside", clickOutside)
-  root = mount(app) 
- 
+  app.directive("click-outside", clickOutside);
+  root = mount(app);
+
 
 }
 
 
 
 function setup() {
-  window.addEventListener('pywebviewready',()=>   {
-    isWebView = true
-  })
+  window.addEventListener('pywebviewready', () => {
+    isWebView = true;
+  });
 
+  console.log("Is Web view: ", isWebView)
   // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/
   window.scroll({
-    top: 2500, 
-    left: 0, 
+    top: 2500,
+    left: 0,
     behavior: 'smooth'
   });
-  
-  // Scroll certain amounts from current position 
-  window.scrollBy({ 
-    top: 100, // could be negative value
-    left: 0, 
-    behavior: 'smooth' 
-  });
 
-  const clickOutside = {
-  beforeMount: (el, binding) => {
-    el.clickOutsideEvent = event => {
-      // here I check that click was outside the el and his children
-      if (!(el == event.target || el.contains(event.target))) {
-        // and if it did, call method provided in attribute value
-        binding.value();
-      }
-    };
-    document.addEventListener("click", el.clickOutsideEvent);
-  },
-  unmounted: el => {
-    document.removeEventListener("click", el.clickOutsideEvent);
-  },
-};  
+  // Scroll certain amounts from current position 
+  window.scrollBy({
+    top: 100, // could be negative value
+    left: 0,
+    behavior: 'smooth'
+  });
 }
 
 function mount(app) {
   // Mount Components
   const components = [
     breadcrumbs,
+    btn,
     card,
+    confirmbox,
+    dropdown,
     editmenu,
     editor,
+    editorinput,
+    editorinputbox,
     modal,
     profilebox,
     searchbox,
     sidebar,
-    sidebarbtn,
     sidebaredit,
+    sidebartoggle,
+    spoilerwarning,
     tab,
     toggle,
   ]
@@ -394,6 +414,7 @@ function changePage(pageId) {
   
   // Reload vue page
   root.reload(pageId)
+  document.querySelector('#app').scrollIntoView();
 }
 
 function copyobj(obj) {
@@ -410,6 +431,19 @@ function createContentObj(content) {
       }
     }
   }
+}
+
+async function fetchData(url) {
+
+  const resp = await fetch(url, {cache: "no-store"}) // cache no store added because backend pywebview is caching fetch and not updating when newly saved
+  if (resp.status === 404) {
+    return "Error"
+  }
+  return await resp.json()
+}
+
+const getKey = (obj) => {
+  return Object.keys(obj)
 }
 
 function isObjEmpty(obj) {
@@ -525,8 +559,10 @@ const breadcrumbs = {
   },
   watch: {
     pageId: {
+      immediate: true,
+      deep: true,
       handler(value) {
-        
+        if (value.trim() == "") return
         try {
           this.directory[this.pageId].parent 
         } catch (error) {
@@ -569,6 +605,22 @@ const breadcrumbs = {
   `
 }
 
+const btn = {
+  name: "Btn",
+  props: {
+    name: { type:String, required: true },
+    bid: { type:String, required: false }, 
+    click: { type: Function, required: false },
+    isActive: { type: Boolean, required: false  }
+  },
+  template: `
+    <button type="button"
+            :class="['btn', isActive == true ? 'btn-active' : '']"
+            :id="bid"
+            @click="click">{{name}}</button>
+  `
+}
+
 const card = {
   name: `Card`,
   data() {
@@ -587,6 +639,7 @@ const card = {
 
       // Misc
       rerender: true,
+      noPreview: false,
     }
   },
   emits: ['processed-content'],
@@ -597,26 +650,26 @@ const card = {
     directory: { type: Object, required: true },
     toggleState: { type: Boolean }
   },
-  components: ['BreadCrumbs'],
+  components: ['BreadCrumbs', 'SpoilerWarning'],
   watch: {
     content: {
       immediate: true,
       deep: true,
       async handler(value) {      
         // Return if value is empty
-        if (isObjEmpty(value)) return  
+        if (isObjEmpty(value)) return;
         
         // Unnecessarily complcated preview removal.        Massive SKILL ISSUE lmao it works
-        let areas = copyobj(value['areas'])
+        let areas = copyobj(value['areas']);
         if (areas.hasOwnProperty("preview")) {
-          const length = Object.keys(areas["preview"].tabs).length
+          const length = Object.keys(areas["preview"].tabs).length;
           if (length == 1) {
-            const tabName = Object.keys(areas["preview"].tabs)[0]
+            const tabName = Object.keys(areas["preview"].tabs)[0];
             if (areas["preview"].tabs[tabName].trim().length == 0) {
-              delete areas["preview"]
+              delete areas["preview"];
             }
           } else if (length == 0) {
-            delete areas["preview"]
+            delete areas["preview"];
           }
 
         }
@@ -624,32 +677,32 @@ const card = {
         for (const area in areas) {
           for (const tab in areas[area].tabs) {
             
-            let content = areas[area].tabs[tab]
+            let content = areas[area].tabs[tab];
 
-            content = content.trim()
+            content = content.trim();
 
-            content = this.renderMD(content)
+            content = this.renderMD(content);
 
-            content = autoLink(content, this.directory)
+            content = autoLink(content, this.directory);
 
-            areas[area].tabs[tab] = content
+            areas[area].tabs[tab] = content;
           }
         }
-        this.areas = areas
+        this.areas = areas;
 
         // Refresh
-        await this.refresh()
+        await this.refresh();
 
-        this.makeTOC()
-        this.toggleArea()
+        this.makeTOC();
+        this.toggleArea();
 
-        this.$emit('processed-content', value)
+        this.$emit('processed-content', value);
       }
     },
     toggleState: {
       handler(value) {
         
-        this.toggleArea()
+        this.toggleArea();
       }
     }
   },
@@ -657,27 +710,25 @@ const card = {
 
     renderMD(value) {
 
-      let md = value.trim().split(/\n/gm)
-      let html = ``
+      let md = value.trim().split(/\n/gm);
+      let html = ``;
       for (const l of md) {
-        let line = l.trim()
+        let line = l.trim();
 
         // if empty line
         if (line == "") {
-          html += `<p>&nbsp</p>\n`
-          continue
+          html += `<p>&nbsp</p>\n`;
+          continue;
         }
 
         // Render Headers
         const hres = line.match(/(#+)\s/);
         if (hres) {
-          const h = hres[0].length
+          const h = hres[0].length;
           let btn = ``
           if (h == 2) {
-            btn = `<a class="button button--toc" onclick="document.querySelector('#top').scrollIntoView();">↑</a>`
-          } else {
-            btn = ``
-          }
+            btn = `<a class="button button--toc" onclick="document.querySelector('#top').scrollIntoView();">↑</a>`;
+          } 
           
           html += `<span class="header1">
                       <h${h} class="H${h}">${hres.input.replace(/\#/g,'').trim()}</h${h}>${btn}
@@ -690,7 +741,7 @@ const card = {
         const bold = [...line.matchAll(/\*\*(.*?)\*\*/g)];
         if (bold.length != 0) {
           for (const b of bold) {
-            line = line.replace(b[0], `<b>${b[1]}</b>`)
+            line = line.replace(b[0], `<b>${b[1]}</b>`);
           }
         }
 
@@ -698,29 +749,31 @@ const card = {
         const italic = [...line.matchAll(/\*(.*?)\*/g)];
         if (italic.length != 0) {
           for (const i of italic) {
-            line = line.replace(i[0], `<i>${i[1]}</i>`)
+            line = line.replace(i[0], `<i>${i[1]}</i>`);
           }
         }
 
 
         // Renders List
-        const list = line.match(/^\* /)
+        const list = line.match(/^\* /);
         if (list) {
-          line = `<li>${line.replace("* ", "").trim()}</li>`
+          line = `<li>${line.replace("* ", "").trim()}</li>`;
         }
 
         // Renders List
-        const quote = line.match(/^\> /)
+        const quote = line.match(/^\> /);
         if (quote) {
-          line = `<blockquote>${line.replace("> ", "").trim()}</blockquote>`
+          line = `<blockquote>${line.replace("> ", "").replace(' - ', '<br> - ').trim()}</blockquote>`;
+
+
         }
 
         // Add to page
-        html += `<p>${line}</p>\n`
+        html += `<p>${line}</p>\n`;
       }
 
       
-      return html
+      return html;
     },
     loadProfile(value) {
       if (!this.hasData(value)) return [value, {}, ""];
@@ -728,7 +781,7 @@ const card = {
       // Separate content and profile
       const parts = value.split(this.profileDivisor);
       
-      const profileText = parts[1].replace(/=/g, "").trim()
+      const profileText = parts[1].replace(/=/g, "").trim();
       // Load yaml
       let profile = {};
       try {
@@ -742,18 +795,19 @@ const card = {
       const content = parts[2].trim();
     
       return [content, profile, profileText];
-   },
+    },
+
     makeTOC() {
-      const tabs = document.getElementsByClassName("tab")
+      const tabs = document.getElementsByClassName("tab");
       
       for (const tab of tabs) {
-        if (!tab.innerHTML.includes("[[toc]]")) return
-        const headers = tab.querySelectorAll("h1, h2, h3, h4, h5, h6")
-        let toc = ""
+        if (!tab.innerHTML.includes("[[toc]]")) return;
+        const headers = tab.querySelectorAll("h1, h2, h3, h4, h5, h6");
+        let toc = "";
 
         for (const head of headers) {
-          head.id = head.innerText.replace(" ", "-").toLowerCase()
-          toc += `<a class="button button--toc ${head.tagName}" onclick="document.querySelector('#${head.id}').scrollIntoView();">${head.innerText}</a>\n`
+          head.id = head.innerText.replace(/\s/g, "-").replace(/\'/g, "-").toLowerCase().replace(/\:/g, "").trim();
+          toc += `<a class="button button--toc ${head.tagName}" onclick="document.querySelector('#${head.id}').scrollIntoView();">${head.innerText.replace(/\:/g, "")}</a>\n`;
         } 
         
 
@@ -761,13 +815,15 @@ const card = {
                               <h1 class="toc-title">Table of Contents</h1>
                               ${toc}
                             </div>`
-        document.getElementById(tab.id).innerHTML = tab.innerHTML.replace("[[toc]]", toc_content)
+        document.getElementById(tab.id).innerHTML = tab.innerHTML.replace("[[toc]]", toc_content);
 
         
       }
     },
-    // Check if There is a data for profiles inside
+
+    
     hasData(value) {
+      // Check if There is a data for profiles inside
       const equalsIndex1 = value.indexOf(this.profileDivisor);
       const equalsIndex2 = value.lastIndexOf(this.profileDivisor);
       
@@ -782,14 +838,14 @@ const card = {
 
     async refresh() {
       this.rerender = false;
-      await Vue.nextTick()
+      await Vue.nextTick();
       this.rerender = true;
     },
     isProfileExist(area) {
       if (!this.areas[area].hasOwnProperty("profile")) {
-        return false
+        return false;
       } else {
-        return Object.keys(this.areas[area].profile).length != 0
+        return Object.keys(this.areas[area].profile).length != 0;
       }
     },
     toggleArea() {
@@ -797,9 +853,10 @@ const card = {
       const previewArea = document.getElementById("preview-area");
 
       if (!previewArea) {
+        this.noPreview = true
         return
       }
-      
+      this.noPreview = false
       if (this.toggleState) {
         fullArea.classList.remove("hide");
         previewArea.classList.add("hide");
@@ -814,11 +871,18 @@ const card = {
 
       
       <div class="card">
+        
+        <SpoilerWarning :toggle-state="toggleState" :no-preview="noPreview"/>
+
+
         <h1 id="title">
           {{ title }} 
         </h1>
 
-        <BreadCrumbs :directory="directory" :page-id="pageId"/>
+
+        <BreadCrumbs :directory="directory" :page-id="pageId" v-if="rerender"/>
+
+  
 
         <div v-for="(area, name, index) in areas"
              v-if="rerender"
@@ -837,33 +901,130 @@ const card = {
 
       <!-- <div>© 2021-2023 Aeiddius. All rights reserved.</div> -->
 
-<!--       
-      <div id="side-toc">
-        
-      </div> -->
+      
+      <div id="side-toc" class="toc side-toc">
+        <h1 class="toc-title">History</h1>
+        <div id="history-content"></div>
+      </div>
 
     </div>
   ` 
 }
 
+const confirmbox = {
+  name: "Confirmbox",
+  props: {
+    id: {type: String, required: true },
+    message: { type: String, required: true, default: "Default Message" },
+    handler: { type: Function}
+  },
+  methods: {
+    close() {
+      document.getElementById(this.id).classList.add("hide")
+    },
+    run() {
+      this.handler()
+      this.close()
+    }
+  },
+  template: `
+    <div class="confirmbox hide" :id="id">
+      <div class="box">
+        <p>{{ message }}</p>
+        <div class="buttons">
+          <button class="btn" @click="run">Confirm</button>
+          <button class="btn btn-red" @click="close">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  `
+}
+
+const dropdown = {
+  name: "Dropdown",
+  props: {
+    label: { type:String, required: true },
+    sid: { type:String }, // Select id
+    change: { type: Function },
+    optionList: { type: Object, required: true },
+    isArray: {type: Boolean, default: false}       
+  },
+  template: `
+    <label :for="sid">{{ label }}</label>
+    <!-- Dropdown -->
+    <select :id="sid" @change="change" class="dropdown" :title="label">
+      
+      <template v-if="isArray">
+        <option value="">None</option>
+        <option :value="value" v-for="(value, name) in optionList">
+            {{ value }}
+        </option>
+      </template>
+
+      <template v-else>
+        <option :value="name" v-for="(value, name) in optionList">
+            {{ name }}
+        </option>
+      </template>
+    </select>
+  `
+}
+
 const editmenu = {
   name: "EditMenu",
-  props: {},
+  props: {
+    metadata: { type: Object, required: true, default: {}},
+  },
   methods: {
     open() {
-      document.getElementById("editor-box").classList.remove("hide")
+      document.getElementById("editor-box").classList.remove("hide");
     },
     add() {
-      changePage('add-page')
-      this.open()
+      changePage('add-page');
+      isCurrentPageTemplate = false
+      this.open();
+    },
+    openDelete() {
+      document.getElementById("delete-confirm").classList.remove("hide");
+      console.log(document.getElementById("delete-confirm"));
+    },
+    async openTemplate() {
+      const val = document.getElementById("template-list").value;
+      console.log(val);
+      
+      // const data = await fetchData(`templates/${val}.json`)
+
+      changePage(val)
+    },
+    deselectTemplate() {
+      const elem = document.getElementById("template-list").options;
+      
+      for(var i = 0; i < elem.length; i++){
+        elem[i].selected = false;
+      }
+
     }
   },
   template: `
     <div id="editmode" class="hide">
       <h1 class="titles">Edit Mode</h1>
-      <button class="button--edit" @click="open">Edit Page</button>
-      <button class="button--edit" @click="add">Add Page</button>
-      <button class="button--edit button--edit-red">Delete Page</button>
+
+      <div class="flex gap-10">
+      <Btn bid="editemenu-edit-page" class="btn--dark" name="Edit Page" :click="open"/>
+      <Btn bid="editemenu-add-page" class="btn--dark" name="Add Page" :click="add"/>
+      <Btn bid="editemenu-delete-page" class="btn--dark btn--red" name="Delete Page" :click="openDelete"/>   
+      </div>
+  
+
+      <div class="template-list">
+        <h2>Templates</h2>
+        <select name="Templates"  size="6" @change="openTemplate" id="template-list" title="templates" v-click-outside="deselectTemplate">
+          <template v-for="(value, index) in metadata.templates">
+            <option :value="value" v-if="index != 'n/a'">{{value}}</option>  
+          </template>
+        </select>  
+      </div>
     </div>
   `
 }
@@ -874,264 +1035,332 @@ const editor = {
     return {
       pageData: {},
       pathChoices: [],
+      isSaveAsTemplate: false,
 
-      
       // Check to see if profile is currently edited
       isCurrentProfile: false,
 
       // area obj
+      pageId: "",
       currentArea: "",
       currentTab: "",
       currentAreaObj: {}
 
-      // if new page
+      // if new page 
     }
   },
-  components: ['EditorTab'],
+  components: ['EditorTab', 'EditorInputBox', 'EditorInput', 'Btn', 'Dropdown'],
   emits: ['save-page'],
-  props: {
-    directory: { type: Object, required: true },
-    pageId: { type: String, required: true, default: "not working fuck" },
+  props: { 
+    metadata: { type: Object, required: true, default: {}},
+    curPageId: { type: String, required: true, default: "not working fuck" },
   },
   methods: {
     start(value){
-      this.pageData = copyobj(value["areas"])
-      this.changeArea('full')
+      // Set Variables
+      this.pageId = this.curPageId;
+      this.pageData = copyobj(value["areas"]);
+      this.changeArea('full');
 
-      // Set pagename:
-      document.getElementById("input-page-name").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].title
-      document.getElementById("input-page-id").value = this.pageId == "add-page" ? "" : this.pageId
-      document.getElementById("input-path").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].path.replace(`${this.pageId}.json`, "").replace(/\//g, "\\")
-    },
-    changeArea(area) {
-
-      if (area == "preview" && !this.pageData.hasOwnProperty("preview")) {
-        this.pageData["preview"] = {
-          tabs: {
-            "default": ""
-          }
-        }
-      }
-
-      // Set initial variables
-      this.isCurrentProfile = false
-      this.currentArea = area
-      this.currentTab = Object.keys(this.pageData[area].tabs)[0]
-      this.currentAreaObj = copyobj(this.pageData[area])
-
-      // Set <Tabs btn active>
-      for (const ar of ['full', 'preview']) {
-        if (ar == area) this.getNode(`btn-${ar}`).classList.add("btn-active")
-        else this.getNode(`btn-${ar}`).classList.remove("btn-active")
-      }
 
       // Create path directory
       const paths = [];
-      for (const entryId in this.directory) {
-        const entry = splitStringAtLast(this.directory[entryId].path, '/')[0]
-        const rehashed_path = entry.replace(/\//g, "\\")
-        if (!paths.includes(rehashed_path)) paths.push(rehashed_path)
+      for (const entryId in this.metadata.directory) {
+        const entry = splitStringAtLast(this.metadata.directory[entryId].path, '/')[0];
+        const rehashed_path = entry.replace(/\//g, "\\");
+        if (!paths.includes(rehashed_path)) paths.push(rehashed_path);
       }
-      this.pathChoices = paths.sort()
-
-      // Remove active status of btn-profile
-      this.getNode("btn-profile").classList.remove("btn-active")
-
-      document.getElementById("tab-rename-input").value = this.currentTab
-
-      // Set <textarea>
-      this.refreshTextArea()
-    },
-    changeTab(event) {
-      // Save the last area
-      this.isCurrentProfile = false
-
-      let newTab = ""
-      if (event instanceof Event) {
-        newTab = event.currentTarget.value
-      } else {
-        newTab = event
-      }
-
-      this.currentTab = newTab
+      this.pathChoices = paths.sort();
       
-      document.getElementById("tab-rename-input").value = newTab
-      this.refreshTextArea()
+      // Check if template
 
-      
-    },
-    refreshTextArea(){
-      this.getNode("textarea").value = `${this.currentAreaObj.tabs[this.currentTab]}`
-    },
-    editProfile() {
-      if (this.isCurrentProfile == false) {
-        this.isCurrentProfile = true
-        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`
-        this.getNode("btn-profile").classList.add("btn-active")
-      } else {
-        this.isCurrentProfile = false 
-        this.refreshTextArea()
-        this.getNode("btn-profile").classList.remove("btn-active")
-      }
-    },
-    saveTextArea(event) {
-      if (this.isCurrentProfile == false) {
-        this.pageData[this.currentArea].tabs[this.currentTab] = event.currentTarget.value
-        this.currentAreaObj.tabs[this.currentTab] = event.currentTarget.value
-      } else {
-        const profile =  jsyaml.load(event.currentTarget.value.trim(), 'utf8')
-        this.pageData[this.currentArea].profile = profile
-        this.currentAreaObj.profile = profile
-      }
-    },
-    save() {
-      const tags = document.getElementById("tags-input").value.trim()
-      const parent = document.getElementById("parent-input").value.trim()
-      const path = document.getElementById("input-path").value.trim()
-      const pageName = document.getElementById("input-page-name").value.trim()
-      const pageId = document.getElementById("input-page-id").value.trim()
+      document.getElementById("saveAsTemplate").checked = isCurrentPageTemplate;
 
-      // Validation
-      if (pageName === "" || pageId === "" || path === ""){
-        console.log("pageName|pageId|path are required")
+
+      // Create parent choices
+      if (!this.metadata.directory.hasOwnProperty(this.pageId) || this.pageId === "404") {
+        document.getElementById("input-page-name").value = this.pageId;
+        document.getElementById("input-page-id").value = this.pageId;
+        document.getElementById("input-path").value = "";
         return
       }
 
-      // if (pageId != this.pageId) {
-      //   console.log(pageId, this.pageId)
-      // }
+      // Set pagename
+      
+      this.setTemplate()
+
+    },
+    changeArea(area) {
+      // Area validation CCheck
+      if (area == "preview" && !this.pageData.hasOwnProperty("preview")) {
+        this.pageData["preview"] = { tabs: { "default": "" } };
+      }
+
+      // Set initial variables
+      this.isCurrentProfile = false;
+      this.currentArea = area;
+      this.currentTab = Object.keys(this.pageData[area].tabs)[0];
+      this.currentAreaObj = copyobj(this.pageData[area]);
+
+      // Set <Tabs btn active>
+      for (const ar of ['full', 'preview']) {
+        if (ar == area) this.getNode(`btn-${ar}`).classList.add("btn-active");
+        else this.getNode(`btn-${ar}`).classList.remove("btn-active");
+      }
+
+      // Remove active status of btn-profile
+      this.getNode("btn-profile").classList.remove("btn-active");
+
+      document.getElementById("tab-rename-input").value = this.currentTab;
+
+      // Set <textarea>
+      this.refreshTextArea();
+    },
+
+    changeTab(event) {
+      this.isCurrentProfile = false;
+      this.currentTab = event instanceof Event ? event.currentTarget.value : event;
+      this.getNode("tab-rename-input").value = this.currentTab;
+      this.refreshTextArea();
+    },
+
+    async changeTemplate() {
+      const select = document.getElementById("template-select");
+      if (select.value === "") return;
+
+      console.log("Select: ", select.value)
+      const url = this.metadata.directory[select.value].path;
+
+      const data = await fetchData(url);
+      this.start(data);
+    },
+
+    refreshTextArea(){
+      this.getNode("textarea").value = `${this.currentAreaObj.tabs[this.currentTab]}`;
+    },
+
+    editProfile() {
+      if (this.isCurrentProfile == false) {
+        this.isCurrentProfile = true;
+        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`;
+        this.getNode("btn-profile").classList.add("btn-active");
+      } else {
+        this.isCurrentProfile = false;
+        this.refreshTextArea();
+        this.getNode("btn-profile").classList.remove("btn-active");
+      }
+    },
+
+    saveTextArea(event) {
+      if (this.isCurrentProfile == false) {
+        this.pageData[this.currentArea].tabs[this.currentTab] = event.currentTarget.value;
+        this.currentAreaObj.tabs[this.currentTab] = event.currentTarget.value;
+      } else {
+        const profile =  jsyaml.load(event.currentTarget.value.trim(), 'utf8');
+        this.pageData[this.currentArea].profile = profile;
+        this.currentAreaObj.profile = profile;
+      }
+    },
+
+    save() {
+      const tags = document.getElementById("input-tags").value.trim();
+      const parent = document.getElementById("input-parent").value.trim();
+      const path = document.getElementById("input-path").value.trim();
+      const pageName = document.getElementById("input-page-name").value.trim();
+      const pageId = document.getElementById("input-page-id").value.trim();
+
+      // Validation
+      if (pageName === "" || pageId === "" || path === ""){
+        console.log("pageName|pageId|path are required");
+        return;
+      }
+
+      // if template
+      if (isCurrentPageTemplate === true) {
+        if (!pageId.includes("template-")) {
+          console.log("Wrong template id format. Must be \"template-name_here\"")
+          return
+        }
+        if (!path.startsWith('templates')) {
+          console.log("Wrong template path. Must start at \"templates\\id_here.json\"")
+          return
+        }
+        if (this.pageId == "add-page") this.page = pageId
+      }
 
       // Remves empty preview
       if (this.pageData.hasOwnProperty("preview")) {
-        const tabs = this.pageData.preview.tabs
-        const tabsvalue = Object.keys(tabs)
+        const tabs = this.pageData.preview.tabs;
+        const tabsvalue = Object.keys(tabs);
         if (tabsvalue.length == 0 || (tabsvalue.length == 1 && tabs[tabsvalue[0]].trim() == "")) {
-          delete this.pageData.preview
+          delete this.pageData.preview;
         } 
       }
 
+      // Validates path ending in "/"
+      let newPath = path.replace(/\\/g, "/");
+      if (!this.isLastCharSlash(newPath)) newPath = newPath + "/";
+
       // Creates metadata.json entry
-      let metaEntry = {
+      const metaEntry = {
         [pageId]: {
           "title": pageName,
-          "path": path.replace(/\\/g, "/") + pageId.replace(/\ /g, "-") + ".json",
+          "path": newPath + pageId.replace(/\ /g, "-") + ".json",
           "parent": parent,
         }
       }
 
-      let newPage = {
+      const newPage = {
         "areas": this.pageData,
         "tags": tags,
         "parent": parent,
       }
-
       // emits saved page
-      this.$emit('save-page', newPage, metaEntry)
+      this.$emit('save-page', path, newPage, metaEntry);
 
-      if (isWebView) {
-        pywebview.api.savePage(path, this.pageId, newPage, metaEntry)
-      }
-      console.log("Saved Successfully")
+      console.log("Saved Successfully");
     },
     tabNew() {
       // Checks if new tab name is empty
-      const tabname = this.getNode('tab-new-input').value.trim()
-      if (tabname === "") return
+      const tabname = this.getNode('tab-new-input').value.trim();
+      if (tabname === "") return;
 
       // Checks if tabname exists already
-      const tabs = Object.keys(this.currentAreaObj.tabs)
-      if (tabs.includes(tabname)) return
+      const tabs = Object.keys(this.currentAreaObj.tabs);
+      if (tabs.includes(tabname)) return;
 
       // Adds new tabname
-      this.pageData[this.currentArea].tabs[tabname] = ""
+      this.pageData[this.currentArea].tabs[tabname] = "";
       
       // Refresh
-      this.changeArea(this.currentArea)
-
-      // hide new tab
-      this.getNode('tab-new').classList.toggle('hide')
-      
-      this.getNode(`tab-new-btn`).classList.remove("btn-active")
+      this.changeArea(this.currentArea);
     },
     tabRename() {
       // Checks if renamed tab is empty
-      const tabname = this.getNode('tab-rename-input').value.trim()
-      if (tabname === "") return
+      const tabname = this.getNode('tab-rename-input').value.trim();
+      if (tabname === "") return;
 
       // Checks if tabname exists already
-      const tabs = Object.keys(this.currentAreaObj.tabs)
-      if (tabs.includes(tabname)) return
+      const tabs = Object.keys(this.currentAreaObj.tabs);
+      if (tabs.includes(tabname)) return;
 
       // Save current tab
-      this.pageData[this.currentArea].tabs[tabname] = `${this.pageData[this.currentArea].tabs[this.currentTab]}`
+      this.pageData[this.currentArea].tabs[tabname] = `${this.pageData[this.currentArea].tabs[this.currentTab]}`;
       
       // Delete tab
-      delete this.pageData[this.currentArea].tabs[this.currentTab]
+      delete this.pageData[this.currentArea].tabs[this.currentTab];
 
       // Refresh
-      this.changeArea(this.currentArea)
-
-      // Hide rename tab
-      this.getNode('tab-rename').classList.toggle('hide')
-
-      this.getNode(`tab-rename-btn`).classList.remove("btn-active")
+      this.changeArea(this.currentArea);
     },
     tabDelete() {
       // delete this.pageData
 
-      const keys = Object.keys(this.pageData[this.currentArea].tabs).length
+      const keys = Object.keys(this.pageData[this.currentArea].tabs).length;
       if (keys == 1) return
 
-      delete this.pageData[this.currentArea].tabs[this.currentTab]
+      delete this.pageData[this.currentArea].tabs[this.currentTab];
 
       // Refresh
-      this.changeArea(this.currentArea)
+      this.changeArea(this.currentArea);
     },
     openTabbtn(id) {
-      this.getNode(`tab-${id}-btn`).classList.toggle("btn-active")
-      this.getNode(`tab-${id}`).classList.toggle('hide')
+      if (id==='new') {
+        this.$refs.tabnew.toggle();
+      } else if (id === 'rename') {
+        this.$refs.tabrename.toggle();
+      }
     },
     closeTabbtn(id) {
-      this.getNode(`tab-${id}-btn`).classList.remove("btn-active")
-      this.getNode(`tab-${id}`).classList.add('hide')
+      this.getNode(`tab-${id}-btn`).classList.remove("btn-active");
+      this.getNode(`tab-${id}`).classList.add('hide');
     },
+
+    saveTemplate() {
+
+      const checked = document.getElementById("saveAsTemplate").checked;
+
+      isCurrentPageTemplate = checked;
+      this.setTemplate();
+    },
+
+
+    setTemplate() {
+      const pageId = document.getElementById("input-page-id")
+      const pageName = document.getElementById("input-page-name")
+      const path = document.getElementById("input-path")
+      const parent = document.getElementById("input-parent")
+
+      if (isCurrentPageTemplate && !this.metadata.templates.includes(this.pageId)) {
+        pageId.value = "template-"
+        pageName.value = "Template: "
+        path.value = "templates/"
+        parent.value = "templates"
+      } else {
+        pageId.value = this.pageId == "add-page" ? "" : this.pageId;
+        pageName.value = this.pageId == "add-page" ? "" : this.metadata.directory[this.pageId].title;
+        path.value = this.pageId == "add-page" ? "" : this.metadata.directory[this.pageId].path.replace(`${this.pageId}.json`, "").replace(/\//g, "\\");
+        parent.value = this.pageId == "add-page" ? "" : this.metadata.directory[this.pageId].parent;
+      }
+
+    },
+
     exit() {
-      this.getNode("editor-box").classList.add("hide")
+      this.getNode("editor-box").classList.add("hide");
     },
     getNode(id) {
-      return document.getElementById(id)
+      return document.getElementById(id);
     },
     oninput(e) {
       if (e.target.value.trim() == "") {
-        e.target.classList.add("invalid")
-        return
+        e.target.classList.add("invalid");
+        return;
       }
       if (e.target.classList.contains("invalid")) {
-        e.target.classList.remove("invalid")
+        e.target.classList.remove("invalid");
       }
+    },
+
+    isLastCharSlash(inputString) {
+      // Get the last character of the string
+      var lastChar = inputString.slice(-1);
+    
+      // Check if the last character is "/"
+      return lastChar === "/";
     }
+  },
+  mounted() {
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        const editor = document.getElementById("editor-box").classList;
+        if (!editor.contains("hide")) {
+          editor.add("hide");
+        }
+      }
+  });
   },
   template: `
   <div id="editor-box" class="editor-container hide">
+
     <div id="editor" class="flex">      
-      <!-- Text Input Area -->
+
       <div class="textbox">
         <h1>Editor</h1>
         
-
+        <!-- Header input -->
         <div class="path-select flex width-100 flex-align">
-
             <div class="width-100">
               <table class="table width-100">
+                <!-- Data Input -->
                 <tr>
-                  <td><label for="input-papge-name">Name:</label></td>
+                  <td><label for="input-page-name">Name:</label></td>
                   <td><input class="input width-100" id="input-page-name" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
                   <td><label for="input-page-id">Id</label></td>
                   <td><input class="input width-100" id="input-page-id" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
                 </tr>
 
                 <!-- Path selector -->
-                <tr  >
+                <tr>
                   <td class="category"><label for="input-path">Path</label>:</td>
                   <td colspan="100%">
                     <input type="text" name="editor" list="path-choices" 
@@ -1140,15 +1369,15 @@ const editor = {
                     <datalist id="path-choices">
                       <option :value="value" v-for="(value, index) in pathChoices">
                       </option>
-                      
                     </datalist>
                   </td>
                 </tr>
               </table>
-
-
             </div>
         </div>
+        <!-- Header Input -->
+
+
         <!-- Textarea -->
         <textarea name="background-color: white;" id="textarea"
                   placeholder="Write here..."
@@ -1160,74 +1389,83 @@ const editor = {
 
         <!-- Mode buttons -->
         <span class="flex">
-          <!-- <label>Mode</label> -->
-          <button class="btn btn-active" id="btn-full" @click="changeArea('full')" type="button" >Full</button>
-          <button class="btn" id="btn-preview" @click="changeArea('preview')" type="button" >Preview</button>
+          <Btn bid="btn-full" :is-active="true" name="Full" :click="() => changeArea('full')"/>
+          <Btn bid="btn-preview" name="Preview" :click="() => changeArea('preview')"/>
         </span>
 
-        <button type="button" class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
+        <Btn bid="btn-profile" name="Edit Profile"
+             :click="editProfile"/>
 
         <!-- Select Tab -->
         <div class="tab-options flex flex-c mt-15">
-          <label>Tabs</label>
           <!-- Dropdown -->
-          <select id="tab-select" @change="changeTab" v-if="currentAreaObj">
-              <option :value="name" v-for="(value, name) in currentAreaObj.tabs">
-                {{ name }}
-              </option>
-          </select>
+          <Dropdown label="Tabs"
+                    sid="tab-select"
+                    :change="changeTab"
+                    :option-list="currentAreaObj.tabs"
+                    v-if="Object.keys(currentAreaObj).length != 0"
+                    />
 
           <!-- Edit -->
           <span class="flex">
-            <button type="button" class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
-            <button type="button" class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
+            <Btn bid="tab-new-btn" name="New"
+                 :click="() => openTabbtn('new')"/>
+                 
+            <Btn bid="tab-rename-btn" name="Rename"
+                 :click="() => openTabbtn('rename')"/>
           </span>
-          <button type="button" class="btn" @click="tabDelete('delete')">Delete</button>
+          <Btn bid="tab-delete-btn" name="Delete"
+               :click="() => tabDelete('delete')"/>
+        
         </div>
+        <!-- Select Tab -->
 
+        
         <!-- Tags -->
-        <div class="flex flex-c mt-15">
-          <label>Tags</label>
-          <input type="text" id="tags-input" class="input width-100"
-                 placeholder="tagA tagB tagC">
-        </div>
-
+        <EditorInput label="Tags"
+                     iid="input-tags"
+                     placeholder="tagA tagB tagC"/>
+                     
         <!-- Parent -->
-        <div class="flex flex-c mt-15">
-          <label>Parent</label>
-          <input type="text" id="parent-input" class="input width-100"
-                 placeholder="home">
-        </div>
+        <EditorInput label="Parent"
+                     iid="input-parent"
+                     did="parent-choices"
+                     placeholder="home"
+                     :datalist="Object.keys(this.metadata.directory).sort()"/>
 
         <hr class="hr">
    
-        <!-- Tab:New -->
-        <div class="flex flex-c boxes hide" id="tab-new">
-          <label>New Tab</label>
-          <input type="text" id="tab-new-input" class="input width-100"
-                 placeholder="home">
+          <!-- Template -->
+          <Dropdown label="Templates"
+                    sid="template-select"
+                    :option-list="this.metadata.templates"
+                    :change="changeTemplate"
+                    :isArray="true"
+                    v-if="Object.keys(currentAreaObj).length != 0"/>
 
-          <div class="flex">
-            <button type="button" class="btn" @click="tabNew">Ok</button>
-            <button type="button" class="btn" @click="closeTabbtn('new')">Cancel</button>
+          <div class="checkbox">
+            <input type="checkbox" name="saveAsTemplate" id="saveAsTemplate" @change="saveTemplate">
+            <span for="saveAsTemplate">Save as Template</span>
           </div>
-        </div>       
 
+ 
+        <!-- Tab:New -->
+        <EditorInputBox ref="tabnew" 
+                        label="New Tab"
+                        iid="tab-new-input"
+                        obid="tab-new-btn"
+                        placeholder="home"
+                        :ok-handler="tabNew"/>        
 
         <!-- Tab:Rename -->
-        <div class="flex flex-c boxes hide" id="tab-rename">
-          <label>Rename Tab</label>
-          <input type="text" id="tab-rename-input" class="input width-100"
-                 placeholder="home">
-
-          <div class="flex">
-            <button type="button" class="btn" @click="tabRename">Ok</button>
-            <button type="button" class="btn" @click="closeTabbtn('rename')">Cancel</button>
-          </div>
-        </div>       
-
-
-
+        <EditorInputBox ref="tabrename" 
+                        label="Rename Tab"
+                        iid="tab-rename-input"
+                        obid="tab-rename-btn"
+                        placeholder="home"
+                        :ok-handler="tabRename"
+                       />
+        
         <div class="flex float-bottom width-100">
           <button class="btn btn-green" @click="save">Save</button>
           <button class="btn btn-red" @click="exit">Exit</button>
@@ -1238,6 +1476,80 @@ const editor = {
     </div> 
 
   </div>
+  `
+}
+
+const editorinput = {
+  name: "EditorInput",
+  props: {
+    label: { type:String, required: true },
+    iid: { type:String, required: true },
+    did: { type:String },
+    placeholder: { type:String},
+    datalist:  { type: Array }
+  },
+  template: `
+    <div class="flex flex-c mt-15">
+      <label :for="iid">{{ label }}</label>
+      <input type="text" :id="iid" class="input width-100"
+             :placeholder="placeholder" :list="did">
+      <template v-if="datalist">
+        <datalist  datalist :id="did">
+          <option :value="value" v-for="(value, index) in datalist"></option>
+        </datalist>
+      </template>
+
+    </div>
+
+  `
+}
+
+const editorinputbox = {
+  name: "EditorInputBox",
+  data() {
+    return {
+      bid: makeid(5)
+    }
+  },
+  props: {
+    label: { type:String, required: true },
+    iid: { type:String, required: true }, // Input id
+    obid: { type:String, required: true }, // Open Button id
+    placeholder: { type:String},
+    okHandler: {type: Function, },
+  },
+  methods: {
+    toggle() {
+      document.getElementById(this.bid).classList.toggle("hide")
+      document.getElementById(this.obid).classList.toggle("btn-active")
+    },
+    ok() {
+      this.okHandler()
+      this.cancel()
+      this.removeBtnHighight()
+    },
+    cancel() {
+      document.getElementById(this.bid).classList.add("hide")
+      this.removeBtnHighight()
+    },
+    removeBtnHighight() {
+      document.getElementById(this.obid).classList.remove("btn-active")
+    }
+  },
+  template: `
+
+  <div class="flex flex-c boxes hide" :id="bid">
+    <label :for="iid">{{label}}</label>
+    <input type="text" :id="iid" class="input width-100"
+           :placeholder="placeholder">
+
+    <div class="flex">
+      <button type="button" class="btn" @click="ok">Ok</button>
+      <button type="button" class="btn" @click="cancel">Cancel</button>
+    </div>
+  </div>       
+
+  
   `
 }
 
@@ -1386,7 +1698,7 @@ const sidebar = {
   data() {
     return {
       navs: {},
-      test: "Asd",
+
     }
   },
   components: ['Searchbox', 'Toggle', 'Editbar'],
@@ -1398,20 +1710,21 @@ const sidebar = {
     }
   },
   props: {
-    projectTitle: { type: String, default: "Default" },
-    projectSubtitle: { type: String, default: "Default Subtitle" },
-    directory: { type: Object, required: true },
+    metadata: { type: Object, required: true},
     rerender: { type: Boolean, default: true }
   },
   watch: {
-    directory: {
-      async handler(value) {
+    metadata: {
+    immediate: true,
+    deep: true,
+    async handler(value) {
         const resp = await (fetch("assets/nav.md"))
         if (resp.status === 404) {
           console.log("Nav not found")
           return
         }
-    
+
+
         const navs = (await resp.text()).trim().split("\n")
         let lastNav = ""
         for (const nav of navs) {
@@ -1420,13 +1733,13 @@ const sidebar = {
           
           // if has subnav
           if (newnav.startsWith("- ")) {
-            this.navs[lastNav]['subnav'][newnav] = autoLink(nav.replace(/\-\s/, ''), this.directory)
+            this.navs[lastNav]['subnav'][newnav] = autoLink(nav.replace(/\-\s/, ''), this.metadata.directory)
             continue
           }
           
           // if No subnav
           this.navs[newnav] = {
-            main: autoLink(nav, this.directory),
+            main: autoLink(nav, this.metadata.directory),
             subnav: {}
           }
           lastNav = newnav
@@ -1465,32 +1778,31 @@ const sidebar = {
         this.pos.style.left = "-500px" 
         this.card.style.marginLeft = "0px"
       }
-    }
+    },
   },
   template: `
   
   <div class="sidebar" v-click-outside="hidesidebar">
 
-    <div class="editor-bar">
-      <Sidebarbtn></Sidebarbtn>
-      <SidebarEdit></SidebarEdit>
-    </div>  
+
+    <SidebarEdit :projectTitle="metadata.projectTitle"></SidebarEdit>
+
  
 
     <div class="user" id="sidebarobj" style="left: 0px;">
-
-      <EditMenu/>
+      
+      <EditMenu :metadata="metadata" v-if="rerender"/>
 
       <div id="navigation">
         <button class="close" @click="closeSidebar">✕</button>
         <!-- Titles section -->
         <div class="titles">
-          <h1 class="title">{{ projectTitle }}</h1>
-          <h2 class="subtitle">{{ projectSubtitle }}</h2>
+          <h1 class="title">{{ metadata.projectTitle }}</h1>
+          <h2 class="subtitle">{{ metadata.projectSubtitle }}</h2>
         </div>
         <!-- Search Box -->
-        <div class="inputs">
-        <Searchbox :directory="directory"/> <Toggle :projectTitle="projectTitle"/>
+      <div class="inputs">
+      <Searchbox :directory="metadata.directory"/> 
         </div>
         
         <!-- Navigation Links -->
@@ -1529,8 +1841,80 @@ const sidebar = {
 `
 }
 
-const sidebarbtn = {
-  name: "Sidebarbtn",
+const sidebaredit = {
+  name: "SidebarEdit",
+  data() {
+    return {
+      nav: "",
+      edit: "",
+    }
+  },
+  props: {
+    projectTitle: { type: String, required: true, default:""},
+  },
+  methods: {
+    openEditMenu() {
+      this.nav.classList.toggle("hide")
+      this.edit.classList.toggle("hide")
+    },
+    openEditor() {
+      document.getElementById("editor-box").classList.remove("hide")
+    },
+    addPage() {
+      changePage('add-page')
+      isCurrentPageTemplate = false
+      this.openEditor()
+    },
+    openDelete() {
+      document.getElementById("delete-confirm").classList.remove("hide")
+      console.log(document.getElementById("delete-confirm"))
+    }
+  },
+  mounted() {
+    this.nav = document.getElementById("navigation")
+    this.edit = document.getElementById("editmode")
+  },
+  template: `
+    <div class="editor-bar">
+      <SidebarToggle/>
+      
+      <Toggle :projectTitle="projectTitle"/>
+      <button class="button--sidebaredit"
+              id="sidebaredit"
+              @click="openEditMenu"
+              title="open edit menu button"
+              >
+              <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 16 16">
+                <path d="M8.00004 4.75421C6.20745 4.75421 4.75427 6.20739 4.75427 7.99997C4.75427 9.79256 6.20745 11.2457 8.00004 11.2457C9.79262 11.2457 11.2458 9.79256 11.2458 7.99997C11.2458 6.20739 9.79262 4.75421 8.00004 4.75421ZM5.75427 7.99997C5.75427 6.75967 6.75973 5.75421 8.00004 5.75421C9.24034 5.75421 10.2458 6.75967 10.2458 7.99997C10.2458 9.24027 9.24034 10.2457 8.00004 10.2457C6.75973 10.2457 5.75427 9.24027 5.75427 7.99997Z"/>
+                <path d="M9.79647 1.34338C9.26853 -0.447793 6.73147 -0.447791 6.20353 1.34338L6.10968 1.66179C5.95246 2.19519 5.34321 2.44755 4.85487 2.18155L4.56336 2.02276C2.9235 1.12953 1.12953 2.9235 2.02276 4.56336L2.18155 4.85487C2.44755 5.34321 2.19519 5.95246 1.66179 6.10968L1.34338 6.20353C-0.447793 6.73147 -0.447791 9.26853 1.34338 9.79647L1.66179 9.89032C2.19519 10.0475 2.44755 10.6568 2.18155 11.1451L2.02276 11.4366C1.12953 13.0765 2.92349 14.8705 4.56335 13.9772L4.85487 13.8184C5.34321 13.5524 5.95246 13.8048 6.10968 14.3382L6.20353 14.6566C6.73147 16.4478 9.26853 16.4478 9.79647 14.6566L9.89032 14.3382C10.0475 13.8048 10.6568 13.5524 11.1451 13.8184L11.4366 13.9772C13.0765 14.8705 14.8705 13.0765 13.9772 11.4366L13.8184 11.1451C13.5524 10.6568 13.8048 10.0475 14.3382 9.89032L14.6566 9.79647C16.4478 9.26853 16.4478 6.73147 14.6566 6.20353L14.3382 6.10968C13.8048 5.95246 13.5524 5.34321 13.8184 4.85487L13.9772 4.56335C14.8705 2.92349 13.0765 1.12953 11.4366 2.02276L11.1451 2.18155C10.6568 2.44755 10.0475 2.19519 9.89032 1.66179L9.79647 1.34338ZM7.16273 1.6261C7.40879 0.7913 8.59121 0.791301 8.83727 1.6261L8.93112 1.94451C9.26845 3.08899 10.5757 3.63046 11.6235 3.05972L11.915 2.90094C12.6793 2.48463 13.5154 3.32074 13.0991 4.08501L12.9403 4.37653C12.3695 5.42433 12.911 6.73155 14.0555 7.06888L14.3739 7.16273C15.2087 7.40879 15.2087 8.59121 14.3739 8.83727L14.0555 8.93112C12.911 9.26845 12.3695 10.5757 12.9403 11.6235L13.0991 11.915C13.5154 12.6793 12.6793 13.5154 11.915 13.0991L11.6235 12.9403C10.5757 12.3695 9.26845 12.911 8.93112 14.0555L8.83727 14.3739C8.59121 15.2087 7.40879 15.2087 7.16273 14.3739L7.06888 14.0555C6.73155 12.911 5.42433 12.3695 4.37653 12.9403L4.08501 13.0991C3.32074 13.5154 2.48463 12.6793 2.90093 11.915L3.05972 11.6235C3.63046 10.5757 3.089 9.26845 1.94452 8.93112L1.6261 8.83727C0.7913 8.59121 0.791301 7.40879 1.6261 7.16273L1.94451 7.06888C3.08899 6.73155 3.63046 5.42433 3.05972 4.37653L2.90093 4.08501C2.48463 3.32073 3.32074 2.48463 4.08501 2.90093L4.37653 3.05972C5.42432 3.63046 6.73155 3.089 7.06888 1.94452L7.16273 1.6261Z"/>
+              </svg>
+      </button>
+      <button class="button--sidebaredit" @click="openEditor" title="open editor button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="25" viewBox="0 0 12 16">
+          <path d="M12 4.5V14C12 15.1046 11.1046 16 10 16H2C0.895431 16 0 15.1046 0 14V2C0 0.89543 0.895431 0 2 0H7.5L12 4.5ZM9 4.5C8.17157 4.5 7.5 3.82843 7.5 3V1H2C1.44772 1 1 1.44772 1 2V14C1 14.5523 1.44772 15 2 15H10C10.5523 15 11 14.5523 11 14V4.5H9Z"/>
+          <path d="M6.64645 6.64645C6.84171 6.45118 7.15829 6.45118 7.35355 6.64645L9.35355 8.64645C9.54882 8.84171 9.54882 9.15829 9.35355 9.35355L7.35355 11.3536C7.15829 11.5488 6.84171 11.5488 6.64645 11.3536C6.45118 11.1583 6.45118 10.8417 6.64645 10.6464L8.29289 9L6.64645 7.35355C6.45118 7.15829 6.45118 6.84171 6.64645 6.64645Z"/>
+          <path d="M5.35355 6.64645C5.15829 6.45118 4.84171 6.45118 4.64645 6.64645L2.64645 8.64645C2.45118 8.84171 2.45118 9.15829 2.64645 9.35355L4.64645 11.3536C4.84171 11.5488 5.15829 11.5488 5.35355 11.3536C5.54882 11.1583 5.54882 10.8417 5.35355 10.6464L3.70711 9L5.35355 7.35355C5.54882 7.15829 5.54882 6.84171 5.35355 6.64645Z"/>
+        </svg>
+      </button>
+      <button class="button--sidebaredit" @click="addPage" title="add page button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 16 16">
+          <path d="M8 6.5C8.27614 6.5 8.5 6.72386 8.5 7V8.5H10C10.2761 8.5 10.5 8.72386 10.5 9C10.5 9.27614 10.2761 9.5 10 9.5H8.5V11C8.5 11.2761 8.27614 11.5 8 11.5C7.72386 11.5 7.5 11.2761 7.5 11V9.5H6C5.72386 9.5 5.5 9.27614 5.5 9C5.5 8.72386 5.72386 8.5 6 8.5H7.5V7C7.5 6.72386 7.72386 6.5 8 6.5Z"/>
+          <path d="M14 4.5V14C14 15.1046 13.1046 16 12 16H4C2.89543 16 2 15.1046 2 14V2C2 0.89543 2.89543 0 4 0H9.5L14 4.5ZM11 4.5C10.1716 4.5 9.5 3.82843 9.5 3V1H4C3.44772 1 3 1.44772 3 2V14C3 14.5523 3.44772 15 4 15H12C12.5523 15 13 14.5523 13 14V4.5H11Z"/>
+        </svg>
+      </button>
+      
+      <button class="button--sidebaredit" @click="openDelete" title="delete page button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="19" height="26" viewBox="0 0 12 16">
+          <path d="M4.85355 7.14645C4.65829 6.95118 4.34171 6.95118 4.14645 7.14645C3.95118 7.34171 3.95118 7.65829 4.14645 7.85355L5.29289 9L4.14645 10.1464C3.95118 10.3417 3.95118 10.6583 4.14645 10.8536C4.34171 11.0488 4.65829 11.0488 4.85355 10.8536L6 9.70711L7.14645 10.8536C7.34171 11.0488 7.65829 11.0488 7.85355 10.8536C8.04882 10.6583 8.04882 10.3417 7.85355 10.1464L6.70711 9L7.85355 7.85355C8.04882 7.65829 8.04882 7.34171 7.85355 7.14645C7.65829 6.95118 7.34171 6.95118 7.14645 7.14645L6 8.29289L4.85355 7.14645Z"/>
+          <path d="M12 14V4.5L7.5 0H2C0.895431 0 0 0.89543 0 2V14C0 15.1046 0.895431 16 2 16H10C11.1046 16 12 15.1046 12 14ZM7.5 3C7.5 3.82843 8.17157 4.5 9 4.5H11V14C11 14.5523 10.5523 15 10 15H2C1.44772 15 1 14.5523 1 14V2C1 1.44772 1.44772 1 2 1H7.5V3Z"/>
+        </svg>
+      </button>
+    </div>
+  ` 
+}
+
+const sidebartoggle = {
+  name: "SidebarToggle",
   data() {
     return {
       pos: "",
@@ -1538,7 +1922,7 @@ const sidebarbtn = {
       lastWidth: 0,
       checked: false,
     }
-  },
+  }, 
   methods: {
     openSidebar() {
       
@@ -1601,7 +1985,8 @@ const sidebarbtn = {
   template: `
     <button class="button--sidebaredit"
             id="sidebaropen"
-            @click="openSidebar">
+            @click="openSidebar"
+            title="open sidebar">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 16 16">
               <path d="M0 3C0 1.89543 0.895431 1 2 1H14C15.1046 1 16 1.89543 16 3V13C16 14.1046 15.1046 15 14 15H2C0.895431 15 0 14.1046 0 13V3ZM5 2V14H14C14.5523 14 15 13.5523 15 13V3C15 2.44772 14.5523 2 14 2H5ZM4 2H2C1.44772 2 1 2.44772 1 3V13C1 13.5523 1.44772 14 2 14H4V2Z"/>
             </svg>
@@ -1609,64 +1994,25 @@ const sidebarbtn = {
   `
 }
 
-const sidebaredit = {
-  name: "SidebarEdit",
-  data() {
-    return {
-      nav: "",
-      edit: "",
-    }
-  },
-  methods: {
-    openEditMenu() {
-      this.nav.classList.toggle("hide")
-      this.edit.classList.toggle("hide")
-    },
-    openEditor() {
-      document.getElementById("editor-box").classList.remove("hide")
-    },
-    addPage() {
-      changePage('add-page')
-      this.openEditor()
-    }
-  },
-  mounted() {
-    this.nav = document.getElementById("navigation")
-    this.edit = document.getElementById("editmode")
-  },
+const spoilerwarning = {
+  name: "SpoilerWarning",
+  props: {
+    toggleState: { type: Boolean, required: true },
+    noPreview: { type: Boolean, required: true },
+  }, 
   template: `
-    <button class="button--sidebaredit"
-            id="sidebaredit"
-            @click="openEditMenu">
-            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 16 16">
-              <path d="M8.00004 4.75421C6.20745 4.75421 4.75427 6.20739 4.75427 7.99997C4.75427 9.79256 6.20745 11.2457 8.00004 11.2457C9.79262 11.2457 11.2458 9.79256 11.2458 7.99997C11.2458 6.20739 9.79262 4.75421 8.00004 4.75421ZM5.75427 7.99997C5.75427 6.75967 6.75973 5.75421 8.00004 5.75421C9.24034 5.75421 10.2458 6.75967 10.2458 7.99997C10.2458 9.24027 9.24034 10.2457 8.00004 10.2457C6.75973 10.2457 5.75427 9.24027 5.75427 7.99997Z"/>
-              <path d="M9.79647 1.34338C9.26853 -0.447793 6.73147 -0.447791 6.20353 1.34338L6.10968 1.66179C5.95246 2.19519 5.34321 2.44755 4.85487 2.18155L4.56336 2.02276C2.9235 1.12953 1.12953 2.9235 2.02276 4.56336L2.18155 4.85487C2.44755 5.34321 2.19519 5.95246 1.66179 6.10968L1.34338 6.20353C-0.447793 6.73147 -0.447791 9.26853 1.34338 9.79647L1.66179 9.89032C2.19519 10.0475 2.44755 10.6568 2.18155 11.1451L2.02276 11.4366C1.12953 13.0765 2.92349 14.8705 4.56335 13.9772L4.85487 13.8184C5.34321 13.5524 5.95246 13.8048 6.10968 14.3382L6.20353 14.6566C6.73147 16.4478 9.26853 16.4478 9.79647 14.6566L9.89032 14.3382C10.0475 13.8048 10.6568 13.5524 11.1451 13.8184L11.4366 13.9772C13.0765 14.8705 14.8705 13.0765 13.9772 11.4366L13.8184 11.1451C13.5524 10.6568 13.8048 10.0475 14.3382 9.89032L14.6566 9.79647C16.4478 9.26853 16.4478 6.73147 14.6566 6.20353L14.3382 6.10968C13.8048 5.95246 13.5524 5.34321 13.8184 4.85487L13.9772 4.56335C14.8705 2.92349 13.0765 1.12953 11.4366 2.02276L11.1451 2.18155C10.6568 2.44755 10.0475 2.19519 9.89032 1.66179L9.79647 1.34338ZM7.16273 1.6261C7.40879 0.7913 8.59121 0.791301 8.83727 1.6261L8.93112 1.94451C9.26845 3.08899 10.5757 3.63046 11.6235 3.05972L11.915 2.90094C12.6793 2.48463 13.5154 3.32074 13.0991 4.08501L12.9403 4.37653C12.3695 5.42433 12.911 6.73155 14.0555 7.06888L14.3739 7.16273C15.2087 7.40879 15.2087 8.59121 14.3739 8.83727L14.0555 8.93112C12.911 9.26845 12.3695 10.5757 12.9403 11.6235L13.0991 11.915C13.5154 12.6793 12.6793 13.5154 11.915 13.0991L11.6235 12.9403C10.5757 12.3695 9.26845 12.911 8.93112 14.0555L8.83727 14.3739C8.59121 15.2087 7.40879 15.2087 7.16273 14.3739L7.06888 14.0555C6.73155 12.911 5.42433 12.3695 4.37653 12.9403L4.08501 13.0991C3.32074 13.5154 2.48463 12.6793 2.90093 11.915L3.05972 11.6235C3.63046 10.5757 3.089 9.26845 1.94452 8.93112L1.6261 8.83727C0.7913 8.59121 0.791301 7.40879 1.6261 7.16273L1.94451 7.06888C3.08899 6.73155 3.63046 5.42433 3.05972 4.37653L2.90093 4.08501C2.48463 3.32073 3.32074 2.48463 4.08501 2.90093L4.37653 3.05972C5.42432 3.63046 6.73155 3.089 7.06888 1.94452L7.16273 1.6261Z"/>
-            </svg>
-    </button> 
+    <div class="warning" v-if="noPreview == false">
 
-    <button class="button--sidebaredit" @click="openEditor">
-      <svg xmlns="http://www.w3.org/2000/svg" width="19" height="25" viewBox="0 0 12 16">
-        <path d="M12 4.5V14C12 15.1046 11.1046 16 10 16H2C0.895431 16 0 15.1046 0 14V2C0 0.89543 0.895431 0 2 0H7.5L12 4.5ZM9 4.5C8.17157 4.5 7.5 3.82843 7.5 3V1H2C1.44772 1 1 1.44772 1 2V14C1 14.5523 1.44772 15 2 15H10C10.5523 15 11 14.5523 11 14V4.5H9Z"/>
-        <path d="M6.64645 6.64645C6.84171 6.45118 7.15829 6.45118 7.35355 6.64645L9.35355 8.64645C9.54882 8.84171 9.54882 9.15829 9.35355 9.35355L7.35355 11.3536C7.15829 11.5488 6.84171 11.5488 6.64645 11.3536C6.45118 11.1583 6.45118 10.8417 6.64645 10.6464L8.29289 9L6.64645 7.35355C6.45118 7.15829 6.45118 6.84171 6.64645 6.64645Z"/>
-        <path d="M5.35355 6.64645C5.15829 6.45118 4.84171 6.45118 4.64645 6.64645L2.64645 8.64645C2.45118 8.84171 2.45118 9.15829 2.64645 9.35355L4.64645 11.3536C4.84171 11.5488 5.15829 11.5488 5.35355 11.3536C5.54882 11.1583 5.54882 10.8417 5.35355 10.6464L3.70711 9L5.35355 7.35355C5.54882 7.15829 5.54882 6.84171 5.35355 6.64645Z"/>
-      </svg>
-    </button>
 
-    <button class="button--sidebaredit" @click="addPage">
-      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" viewBox="0 0 16 16">
-        <path d="M8 6.5C8.27614 6.5 8.5 6.72386 8.5 7V8.5H10C10.2761 8.5 10.5 8.72386 10.5 9C10.5 9.27614 10.2761 9.5 10 9.5H8.5V11C8.5 11.2761 8.27614 11.5 8 11.5C7.72386 11.5 7.5 11.2761 7.5 11V9.5H6C5.72386 9.5 5.5 9.27614 5.5 9C5.5 8.72386 5.72386 8.5 6 8.5H7.5V7C7.5 6.72386 7.72386 6.5 8 6.5Z"/>
-        <path d="M14 4.5V14C14 15.1046 13.1046 16 12 16H4C2.89543 16 2 15.1046 2 14V2C2 0.89543 2.89543 0 4 0H9.5L14 4.5ZM11 4.5C10.1716 4.5 9.5 3.82843 9.5 3V1H4C3.44772 1 3 1.44772 3 2V14C3 14.5523 3.44772 15 4 15H12C12.5523 15 13 14.5523 13 14V4.5H11Z"/>
-      </svg>
-    </button>
+        <span v-if="toggleState == true" class="content spoiler">
+          Spoiler Mode
+        </span>
+        <span v-if="toggleState == false"  class="content">
+          Preview Mode
+        </span>
 
-    
-    <button class="button--sidebaredit">
-      <svg xmlns="http://www.w3.org/2000/svg" width="19" height="26" viewBox="0 0 12 16">
-        <path d="M4.85355 7.14645C4.65829 6.95118 4.34171 6.95118 4.14645 7.14645C3.95118 7.34171 3.95118 7.65829 4.14645 7.85355L5.29289 9L4.14645 10.1464C3.95118 10.3417 3.95118 10.6583 4.14645 10.8536C4.34171 11.0488 4.65829 11.0488 4.85355 10.8536L6 9.70711L7.14645 10.8536C7.34171 11.0488 7.65829 11.0488 7.85355 10.8536C8.04882 10.6583 8.04882 10.3417 7.85355 10.1464L6.70711 9L7.85355 7.85355C8.04882 7.65829 8.04882 7.34171 7.85355 7.14645C7.65829 6.95118 7.34171 6.95118 7.14645 7.14645L6 8.29289L4.85355 7.14645Z"/>
-        <path d="M12 14V4.5L7.5 0H2C0.895431 0 0 0.89543 0 2V14C0 15.1046 0.895431 16 2 16H10C11.1046 16 12 15.1046 12 14ZM7.5 3C7.5 3.82843 8.17157 4.5 9 4.5H11V14C11 14.5523 10.5523 15 10 15H2C1.44772 15 1 14.5523 1 14V2C1 1.44772 1.44772 1 2 1H7.5V3Z"/>
-      </svg>
-    </button>
-  ` 
+    </div>
+  `
 }
 
 const tab = {
@@ -1686,6 +2032,13 @@ const tab = {
     this.groupclass = makeid(6)
     this.buttonclass = makeid(6)
 
+    // const tabs = document.getElementsByClassName("tab")
+    // for (let tab of tabs) {
+    //   if (!tab.classList.contains("hide")) {
+    //     console.log(tab)
+    //   }
+    // }
+
   },
   methods: {
 
@@ -1700,7 +2053,8 @@ const tab = {
           // const toc = tab.getElementsByClassName("toc")
           // if (toc) {
           //   const toc_ = toc[0]
-          //   console.log(tab)
+          //   document.getElementById("side-toc").innerHTML = toc_.innerHTML
+          //   console.log(toc_)
           // }
           continue;
         } 
@@ -1761,11 +2115,12 @@ const toggle = {
     }
   },
   props: {
-    projectTitle: { type: String, required: true }
+    projectTitle: { required: true }
   },
   watch: {
     projectTitle: {
       handler(value) {
+        if (typeof value === undefined) return
         this.uniqueId = this.projectTitle.toLowerCase().trim().replace(/\s/g, "-")+"-storage"
 
         if (localStorage.getItem(this.uniqueId) === null) {
@@ -1788,10 +2143,10 @@ const toggle = {
     }
   },
   template: `
-    <span class="toggle">
+    <div class="toggle">
       <input type="checkbox" id="switch" @click="toggleArea"/>
       <label for="switch">Toggle</label>
-    </span>
+    </div>
   `
 }
 

@@ -7,4 +7,5 @@ function changePage(pageId) {
   
   // Reload vue page
   root.reload(pageId)
+  document.querySelector('#app').scrollIntoView();
 }

@@ -1,0 +1,46 @@
+@use '../../../css/vars' as *;
+
+
+
+.btn {
+  padding: 5px 10px 5px 10px;
+  border: none;
+  border-radius: 5px;
+  width: 100%;
+
+  // Element
+  background-color: $blue;
+  color: white;
+
+  // Misc
+  transition: 0.1s linear;
+  user-select: none;
+  cursor: pointer;
+
+  font-weight: 100 !important;
+  font-style: normal;
+  font-size: 14px;
+  
+  &:hover {
+    transform: scale(1.1);
+  }
+  
+  &:active {
+    transform: scale(1);
+  }
+}
+
+.btn-active {
+  background-color: $dark !important;
+}
+
+.btn-blue {
+  background-color: $blue !important;
+  color: white;
+} 
+
+.btn-red {
+  background-color: $black !important; 
+  color: white;
+} 
+

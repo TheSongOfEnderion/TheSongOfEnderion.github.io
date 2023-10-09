@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta content="IE=edge,chrome=1">
 
   <title>Loremaster</title>
 
@@ -16,21 +16,23 @@
 <body onload="start()">
 
   <div id="app">
-    <Editor ref="editor" :directory="directory" @save-page="savePage" :page-id="pageId"></Editor>
-    
-    <div class="container full" id="top">
+    <Editor ref="editor"
+            :metadata="metadata"
+            @save-page="savePage"
+            :cur-page-id="pageId"></Editor>
 
+    <Confirmbox message="Delete this page?"
+                id="delete-confirm"
+                :handler="deletePage"></Confirmbox>
+
+    <div class="container full" id="top">
       <!-- Sidebar for navigation -->
-      <Sidebar :directory="directory"
-               :project-title="projectTitle"
-               :project-subtitle="projectSubtitle"
-               :rerender="rerender">
-      </Sidebar>
+      <Sidebar :rerender="rerender" :metadata="metadata"></Sidebar>
       
       <!-- Card component - All contents comes here -->
       <Card :title="pageName"
             :content="content"
-            :directory="directory"
+            :directory="metadata.directory"
             :toggle-state="toggleState"
             :page-id="pageId"
             @processed-content="(value) => $refs.editor.start(value)"
@@ -38,9 +40,12 @@
     </div>
   </div>
 
+  <!-- Script imports -->
   <script src=".lore/js/import/yaml.min.js"></script>
+  <!-- <script src=".lore/js/import/vue.global.prod.min.js"></script> -->
+
   <script src=".lore/js/import/vue.global.js"></script>
-  
+
   <script src=".lore/js/index.js"></script>
 </body>
 

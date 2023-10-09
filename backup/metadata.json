@@ -1,0 +1,347 @@
+{
+  "title": "The Song of Enderion",
+  "subtitle": "A hymn through Eternity",
+  "directory": {
+    "home": {
+      "title": "Home",
+      "path": "content/home.json",
+      "parent": "geh"
+    },
+    "nav": {
+      "title": "Navigation",
+      "path": "assets/nav.json",
+      "parent": "geh"
+    },
+    "404": {
+      "title": "404",
+      "path": "assets/404.json",
+      "parent": "geh"
+    },
+    "new": {
+      "title": "New",
+      "path": "assets/new.json",
+      "parent": "geh"
+    },
+    "add-page": {
+      "title": "Add Page",
+      "path": "assets/new.json",
+      "parent": ""
+    },
+    "story": {
+      "title": "Story",
+      "path": "content/story.json",
+      "parent": "geh"
+    },
+
+    "ethan-morales": {
+      "title": "Ethan Morales",
+      "path": "content/story/tboah/characters/protagonist/ethan-morales.json",
+      "parent": "tboah-characters"
+    },
+    "karthan-morales": {
+      "title": "Karthan Morales",
+      "path": "content/story/tboah/characters/villains/karthan-morales.json",
+      "parent": "tboah-characters"
+    },
+    "tboah": {
+      "title": "The Birth of a Hero",
+      "path": "content/story/tboah/tboah.json",
+      "parent": ""
+    },
+    "tboah-characters": {
+      "title": "Characters",
+      "path": "content/story/tboah/tboah-characters.json",
+      "parent": "tboah"
+    },
+    "giselle-iridao": {
+      "title": "Giselle Iridao",
+      "path": "content/story/tboah/characters/deuteragonist/giselle-iridao.json",
+      "parent": "tboah-characters"
+    },
+    "eltia-axolin": {
+      "title": "Eltia Axolin",
+      "path": "content/story/tboah/characters/deuteragonist/eltia-axolin.json",
+      "parent": "tboah-characters"
+    },
+    "mayumi-severino": {
+      "title": "Mayumi Severino",
+      "path": "content/story/tboah/characters/deuteragonist/mayumi-severino.json",
+      "parent": "tboah-characters"
+    },
+    "tie": {
+      "title": "The Irregular Entity",
+      "path": "content/story/tie/tie.json",
+      "parent": ""
+    },
+    "marcus-romulo": {
+      "title": "Marcus Romulo",
+      "path": "content/story/tie/characters/main-characters/marcus-romulo.json",
+      "parent": "tie-characters"
+    },
+    "kevin-lichtein": {
+      "title": "Kevin Lichtein",
+      "path": "content/story/tboah/characters/protagonist/kevin-lichtein.json",
+      "parent": "tboah-characters"
+    },
+    "yasha-romanova": {
+      "title": "Yasha Romanova",
+      "path": "content/story/tboah/characters/e-class/yasha-romanova.json",
+      "parent": "tboah-characters"
+    },
+    "eldra": {
+      "title": "Eldra",
+      "path": "content/lore/eldra.json",
+      "parent": "lore"
+    },
+    "eldrada": {
+      "title": "Eldrada",
+      "path": "content/lore/eldra/eldrada.json",
+      "parent": "eldra"
+    },
+    "lore": {
+      "title": "Lore",
+      "path": "content/lore/lore.json",
+      "parent": ""
+    },
+    "enderion": {
+      "title": "Enderion",
+      "path": "content/lore/beings/enderion.json",
+      "parent": "beings"
+    },
+    "races": {
+      "title": "Races",
+      "path": "content/lore/races.json",
+      "parent": "lore"
+    },
+    "arsean": {
+      "title": "Arsean",
+      "path": "content/lore/races/mirdum/arsean.json",
+      "parent": "races"
+    },
+    "eldric-language": {
+      "title": "Eldric language",
+      "path": "content/lore/eldra/eldric-language.json",
+      "parent": "eldra"
+    },
+    "world": {
+      "title": "World",
+      "path": "content/lore/world.json",
+      "parent": "lore"
+    },
+    "beings": {
+      "title": "Beings",
+      "path": "content/lore/beings.json",
+      "parent": "lore"
+    },
+    "mirdum": {
+      "title": "Mirdum",
+      "path": "content/lore/world/mirdum.json",
+      "parent": "world"
+    },
+    "celt": {
+      "title": "Celt",
+      "path": "content/lore/races/mirdum/celt.json",
+      "parent": "races"
+    },
+    "yoruban": {
+      "title": "Yoruban",
+      "path": "content/lore/races/mirdum/yoruban.json",
+      "parent": "races"
+    },
+    "shadowfaust": {
+      "title": "Shadowfaust",
+      "path": "content/lore/races/mirdum/shadowfaust.json",
+      "parent": "races"
+    },
+    "librarium": {
+      "title": "Librarium",
+      "path": "content/librarium.json",
+      "parent": ""
+    },
+    "jay-baker": {
+      "title": "Jay Baker",
+      "path": "content/story/tboah/characters/e-class/jay-baker.json",
+      "parent": "tboah-characters"
+    },
+    "tie-characters": {
+      "title": "New page",
+      "path": "content/tie-characterss.json",
+      "parent": ""
+    },
+    "amihan-villanueva": {
+      "title": "Amihan Villanueva",
+      "path": "content/story/tboah/characters/e-class/amihan-villanueva.json",
+      "parent": "tboah-characters"
+    },
+    "niña-bach": {
+      "title": "Niña Bach",
+      "path": "content/story/tboah/characters/e-class/niña-bach.json",
+      "parent": "tboah-characters"
+    },
+    "ancestor-parents": {
+      "title": "Ancestor Parents",
+      "path": "content/librarium/myths and religions/ancestor-parents.json",
+      "parent": "myths-and-religions"
+    },
+    "myths-and-religions": {
+      "title": "Myths and Religions",
+      "path": "content/librarium/myths-and-religions.json",
+      "parent": "librarium"
+    },
+    "religion": {
+      "title": "Religion",
+      "path": "content/religion.json",
+      "parent": ""
+    },
+    "god-template": {
+      "title": "God Template",
+      "path": "content/god-template.json",
+      "parent": ""
+    },
+    "the-shadow-commandments": {
+      "title": "The Shadow Commandments",
+      "path": "content/librarium/myths and religions/the-shadow-commandments.json",
+      "parent": "myths-and-religions"
+    },
+    "eldrasil": {
+      "title": "Eldrasil",
+      "path": "content/lore/eldra/eldrasil.json",
+      "parent": "eldra"
+    },
+    "micthianteculou": {
+      "title": "Micthianteculou",
+      "path": "content/lore/eldra/eldrasil/micthianteculou.json",
+      "parent": "eldrasil"
+    },
+    "test ppagea": {
+      "title": "New page",
+      "path": "content/test-ppagea.json",
+      "parent": ""
+    },
+    "the-creation": {
+      "title": "The Creation of Existence",
+      "path": "content/librarium/myths and religions/the-creation.json",
+      "parent": "myths-and-religions"
+    },
+    "bloom-lotus-company": {
+      "title": "Bloom Lotus Company",
+      "path": "content/lore/world/mirdum/loreteia/bloom-lotus-company.json",
+      "parent": "mirdum"
+    },
+    "ancient-heroes": {
+      "title": "Ancient Heroes",
+      "path": "content/librarium/history/ancient-heroes.json",
+      "parent": "history"
+    },
+    "history": {
+      "title": "History",
+      "path": "content/librarium/history.json",
+      "parent": "librarium"
+    },
+    "histories": {
+      "title": "History",
+      "path": "content/lore/histories.json",
+      "parent": "lore"
+    },
+    "items": {
+      "title": "Items",
+      "path": "content/items.json",
+      "parent": "lore"
+    },
+    "the-blade-of-amaranth": {
+      "title": "The Blade of Amaranth",
+      "path": "content/items/weapons/the-blade-of-amaranth.json",
+      "parent": "items"
+    },
+    "kataratch-armor": {
+      "title": "Kataratch Armor",
+      "path": "content/items/armors/kataratch-armor.json",
+      "parent": "items"
+    },
+    "eotoq-characters": {
+      "title": "Characters",
+      "path": "content/story/eotoq/eotoq-characters.json",
+      "parent": "eotoq"
+    },
+    "eotoq": {
+      "title": "Euphemia of the Ordinary Quill",
+      "path": "content/story/eotoq/eotoq.json",
+      "parent": ""
+    },
+    "ordinary-quill": {
+      "title": "Ordinary Quill",
+      "path": "content/items/misc/ordinary-quill.json",
+      "parent": "items"
+    },
+    "euphemia": {
+      "title": "Euphemia Trysten",
+      "path": "content/story/eotoq/characters/euphemia.json",
+      "parent": "eotoq-characters"
+    },
+    "eotoq-chapter-1": {
+      "title": "Chapter 1 — The Ordinary Quill (1)",
+      "path": "content/story/eotoq/chapters/eotoq-chapter-1.json",
+      "parent": "eotoq"
+    },
+    "klein-huber": {
+      "title": "Klein Huber",
+      "path": "content/story/tboah/characters/e-class/klein-huber.json",
+      "parent": "tboah-characters"
+    },
+    "mina": {
+      "title": "Mina",
+      "path": "content/story/tboah/characters/a-class/mina.json",
+      "parent": ""
+    },
+    "characters": {
+      "title": "Characters",
+      "path": "content/characters.json",
+      "parent": ""
+    },
+    "aulindrel": {
+      "title": "Aulindrel",
+      "path": "content/lore/beings/aulindrel.json",
+      "parent": "beings"
+    },
+    "e-class": {
+      "title": "E-Class",
+      "path": "content/story/tboah/settings/uha/e-class.json",
+      "parent": "tboah-settings"
+    },
+    "tboah-settings": {
+      "title": "Settings (tboah)",
+      "path": "content/story/tboah/tboah-settings.json",
+      "parent": "tboah"
+    },
+    "factions": {
+      "title": "Factions",
+      "path": "content/lore/factions.json",
+      "parent": "lore"
+    },
+    "the-ferret-question": {
+      "title": "The Ferret Question",
+      "path": "content/librarium/myths and religions/the-ferret-question.json",
+      "parent": "myths-and-religions"
+    },
+    "magic": {
+      "title": "Magic",
+      "path": "content/lore/magic.json",
+      "parent": ""
+    },
+    "state": {
+      "title": "State",
+      "path": "content/lore/state.json",
+      "parent": "lore"
+    },
+    "hoonding": {
+      "title": "Hoonding",
+      "path": "content/state/hoonding.json",
+      "parent": "state"
+    },
+    "lady-of-the-ashen-shroud": {
+      "title": "Lady of the Ashen Shroud",
+      "path": "content/lore/beings/lady-of-the-ashen-shroud.json",
+      "parent": "beings"
+    }
+  }
+}

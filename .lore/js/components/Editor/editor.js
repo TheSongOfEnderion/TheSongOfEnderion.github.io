@@ -4,264 +4,332 @@ const editor = {
     return {
       pageData: {},
       pathChoices: [],
+      isSaveAsTemplate: false,
 
-      
       // Check to see if profile is currently edited
       isCurrentProfile: false,
 
       // area obj
+      pageId: "",
       currentArea: "",
       currentTab: "",
       currentAreaObj: {}
 
-      // if new page
+      // if new page 
     }
   },
-  components: ['EditorTab'],
+  components: ['EditorTab', 'EditorInputBox', 'EditorInput', 'Btn', 'Dropdown'],
   emits: ['save-page'],
-  props: {
-    directory: { type: Object, required: true },
-    pageId: { type: String, required: true, default: "not working fuck" },
+  props: { 
+    metadata: { type: Object, required: true, default: {}},
+    curPageId: { type: String, required: true, default: "not working fuck" },
   },
   methods: {
     start(value){
-      this.pageData = copyobj(value["areas"])
-      this.changeArea('full')
+      // Set Variables
+      this.pageId = this.curPageId;
+      this.pageData = copyobj(value["areas"]);
+      this.changeArea('full');
 
-      // Set pagename:
-      document.getElementById("input-page-name").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].title
-      document.getElementById("input-page-id").value = this.pageId == "add-page" ? "" : this.pageId
-      document.getElementById("input-path").value = this.pageId == "add-page" ? "" : this.directory[this.pageId].path.replace(`${this.pageId}.json`, "").replace(/\//g, "\\")
-    },
-    changeArea(area) {
-
-      if (area == "preview" && !this.pageData.hasOwnProperty("preview")) {
-        this.pageData["preview"] = {
-          tabs: {
-            "default": ""
-          }
-        }
-      }
-
-      // Set initial variables
-      this.isCurrentProfile = false
-      this.currentArea = area
-      this.currentTab = Object.keys(this.pageData[area].tabs)[0]
-      this.currentAreaObj = copyobj(this.pageData[area])
-
-      // Set <Tabs btn active>
-      for (const ar of ['full', 'preview']) {
-        if (ar == area) this.getNode(`btn-${ar}`).classList.add("btn-active")
-        else this.getNode(`btn-${ar}`).classList.remove("btn-active")
-      }
 
       // Create path directory
       const paths = [];
-      for (const entryId in this.directory) {
-        const entry = splitStringAtLast(this.directory[entryId].path, '/')[0]
-        const rehashed_path = entry.replace(/\//g, "\\")
-        if (!paths.includes(rehashed_path)) paths.push(rehashed_path)
+      for (const entryId in this.metadata.directory) {
+        const entry = splitStringAtLast(this.metadata.directory[entryId].path, '/')[0];
+        const rehashed_path = entry.replace(/\//g, "\\");
+        if (!paths.includes(rehashed_path)) paths.push(rehashed_path);
       }
-      this.pathChoices = paths.sort()
-
-      // Remove active status of btn-profile
-      this.getNode("btn-profile").classList.remove("btn-active")
-
-      document.getElementById("tab-rename-input").value = this.currentTab
-
-      // Set <textarea>
-      this.refreshTextArea()
-    },
-    changeTab(event) {
-      // Save the last area
-      this.isCurrentProfile = false
-
-      let newTab = ""
-      if (event instanceof Event) {
-        newTab = event.currentTarget.value
-      } else {
-        newTab = event
-      }
-
-      this.currentTab = newTab
+      this.pathChoices = paths.sort();
       
-      document.getElementById("tab-rename-input").value = newTab
-      this.refreshTextArea()
+      // Check if template
 
-      
-    },
-    refreshTextArea(){
-      this.getNode("textarea").value = `${this.currentAreaObj.tabs[this.currentTab]}`
-    },
-    editProfile() {
-      if (this.isCurrentProfile == false) {
-        this.isCurrentProfile = true
-        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`
-        this.getNode("btn-profile").classList.add("btn-active")
-      } else {
-        this.isCurrentProfile = false 
-        this.refreshTextArea()
-        this.getNode("btn-profile").classList.remove("btn-active")
-      }
-    },
-    saveTextArea(event) {
-      if (this.isCurrentProfile == false) {
-        this.pageData[this.currentArea].tabs[this.currentTab] = event.currentTarget.value
-        this.currentAreaObj.tabs[this.currentTab] = event.currentTarget.value
-      } else {
-        const profile =  jsyaml.load(event.currentTarget.value.trim(), 'utf8')
-        this.pageData[this.currentArea].profile = profile
-        this.currentAreaObj.profile = profile
-      }
-    },
-    save() {
-      const tags = document.getElementById("tags-input").value.trim()
-      const parent = document.getElementById("parent-input").value.trim()
-      const path = document.getElementById("input-path").value.trim()
-      const pageName = document.getElementById("input-page-name").value.trim()
-      const pageId = document.getElementById("input-page-id").value.trim()
+      document.getElementById("saveAsTemplate").checked = isCurrentPageTemplate;
 
-      // Validation
-      if (pageName === "" || pageId === "" || path === ""){
-        console.log("pageName|pageId|path are required")
+
+      // Create parent choices
+      if (!this.metadata.directory.hasOwnProperty(this.pageId) || this.pageId === "404") {
+        document.getElementById("input-page-name").value = this.pageId;
+        document.getElementById("input-page-id").value = this.pageId;
+        document.getElementById("input-path").value = "";
         return
       }
 
-      // if (pageId != this.pageId) {
-      //   console.log(pageId, this.pageId)
-      // }
+      // Set pagename
+      
+      this.setTemplate()
+
+    },
+    changeArea(area) {
+      // Area validation CCheck
+      if (area == "preview" && !this.pageData.hasOwnProperty("preview")) {
+        this.pageData["preview"] = { tabs: { "default": "" } };
+      }
+
+      // Set initial variables
+      this.isCurrentProfile = false;
+      this.currentArea = area;
+      this.currentTab = Object.keys(this.pageData[area].tabs)[0];
+      this.currentAreaObj = copyobj(this.pageData[area]);
+
+      // Set <Tabs btn active>
+      for (const ar of ['full', 'preview']) {
+        if (ar == area) this.getNode(`btn-${ar}`).classList.add("btn-active");
+        else this.getNode(`btn-${ar}`).classList.remove("btn-active");
+      }
+
+      // Remove active status of btn-profile
+      this.getNode("btn-profile").classList.remove("btn-active");
+
+      document.getElementById("tab-rename-input").value = this.currentTab;
+
+      // Set <textarea>
+      this.refreshTextArea();
+    },
+
+    changeTab(event) {
+      this.isCurrentProfile = false;
+      this.currentTab = event instanceof Event ? event.currentTarget.value : event;
+      this.getNode("tab-rename-input").value = this.currentTab;
+      this.refreshTextArea();
+    },
+
+    async changeTemplate() {
+      const select = document.getElementById("template-select");
+      if (select.value === "") return;
+
+      console.log("Select: ", select.value)
+      const url = this.metadata.directory[select.value].path;
+
+      const data = await fetchData(url);
+      this.start(data);
+    },
+
+    refreshTextArea(){
+      this.getNode("textarea").value = `${this.currentAreaObj.tabs[this.currentTab]}`;
+    },
+
+    editProfile() {
+      if (this.isCurrentProfile == false) {
+        this.isCurrentProfile = true;
+        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`;
+        this.getNode("btn-profile").classList.add("btn-active");
+      } else {
+        this.isCurrentProfile = false;
+        this.refreshTextArea();
+        this.getNode("btn-profile").classList.remove("btn-active");
+      }
+    },
+
+    saveTextArea(event) {
+      if (this.isCurrentProfile == false) {
+        this.pageData[this.currentArea].tabs[this.currentTab] = event.currentTarget.value;
+        this.currentAreaObj.tabs[this.currentTab] = event.currentTarget.value;
+      } else {
+        const profile =  jsyaml.load(event.currentTarget.value.trim(), 'utf8');
+        this.pageData[this.currentArea].profile = profile;
+        this.currentAreaObj.profile = profile;
+      }
+    },
+
+    save() {
+      const tags = document.getElementById("input-tags").value.trim();
+      const parent = document.getElementById("input-parent").value.trim();
+      const path = document.getElementById("input-path").value.trim();
+      const pageName = document.getElementById("input-page-name").value.trim();
+      const pageId = document.getElementById("input-page-id").value.trim();
+
+      // Validation
+      if (pageName === "" || pageId === "" || path === ""){
+        console.log("pageName|pageId|path are required");
+        return;
+      }
+
+      // if template
+      if (isCurrentPageTemplate === true) {
+        if (!pageId.includes("template-")) {
+          console.log("Wrong template id format. Must be \"template-name_here\"")
+          return
+        }
+        if (!path.startsWith('templates')) {
+          console.log("Wrong template path. Must start at \"templates\\id_here.json\"")
+          return
+        }
+        if (this.pageId == "add-page") this.page = pageId
+      }
 
       // Remves empty preview
       if (this.pageData.hasOwnProperty("preview")) {
-        const tabs = this.pageData.preview.tabs
-        const tabsvalue = Object.keys(tabs)
+        const tabs = this.pageData.preview.tabs;
+        const tabsvalue = Object.keys(tabs);
         if (tabsvalue.length == 0 || (tabsvalue.length == 1 && tabs[tabsvalue[0]].trim() == "")) {
-          delete this.pageData.preview
+          delete this.pageData.preview;
         } 
       }
 
+      // Validates path ending in "/"
+      let newPath = path.replace(/\\/g, "/");
+      if (!this.isLastCharSlash(newPath)) newPath = newPath + "/";
+
       // Creates metadata.json entry
-      let metaEntry = {
+      const metaEntry = {
         [pageId]: {
           "title": pageName,
-          "path": path.replace(/\\/g, "/") + pageId.replace(/\ /g, "-") + ".json",
+          "path": newPath + pageId.replace(/\ /g, "-") + ".json",
           "parent": parent,
         }
       }
 
-      let newPage = {
+      const newPage = {
         "areas": this.pageData,
         "tags": tags,
         "parent": parent,
       }
-
       // emits saved page
-      this.$emit('save-page', newPage, metaEntry)
+      this.$emit('save-page', path, newPage, metaEntry);
 
-      if (isWebView) {
-        pywebview.api.savePage(path, this.pageId, newPage, metaEntry)
-      }
-      console.log("Saved Successfully")
+      console.log("Saved Successfully");
     },
     tabNew() {
       // Checks if new tab name is empty
-      const tabname = this.getNode('tab-new-input').value.trim()
-      if (tabname === "") return
+      const tabname = this.getNode('tab-new-input').value.trim();
+      if (tabname === "") return;
 
       // Checks if tabname exists already
-      const tabs = Object.keys(this.currentAreaObj.tabs)
-      if (tabs.includes(tabname)) return
+      const tabs = Object.keys(this.currentAreaObj.tabs);
+      if (tabs.includes(tabname)) return;
 
       // Adds new tabname
-      this.pageData[this.currentArea].tabs[tabname] = ""
+      this.pageData[this.currentArea].tabs[tabname] = "";
       
       // Refresh
-      this.changeArea(this.currentArea)
-
-      // hide new tab
-      this.getNode('tab-new').classList.toggle('hide')
-      
-      this.getNode(`tab-new-btn`).classList.remove("btn-active")
+      this.changeArea(this.currentArea);
     },
     tabRename() {
       // Checks if renamed tab is empty
-      const tabname = this.getNode('tab-rename-input').value.trim()
-      if (tabname === "") return
+      const tabname = this.getNode('tab-rename-input').value.trim();
+      if (tabname === "") return;
 
       // Checks if tabname exists already
-      const tabs = Object.keys(this.currentAreaObj.tabs)
-      if (tabs.includes(tabname)) return
+      const tabs = Object.keys(this.currentAreaObj.tabs);
+      if (tabs.includes(tabname)) return;
 
       // Save current tab
-      this.pageData[this.currentArea].tabs[tabname] = `${this.pageData[this.currentArea].tabs[this.currentTab]}`
+      this.pageData[this.currentArea].tabs[tabname] = `${this.pageData[this.currentArea].tabs[this.currentTab]}`;
       
       // Delete tab
-      delete this.pageData[this.currentArea].tabs[this.currentTab]
+      delete this.pageData[this.currentArea].tabs[this.currentTab];
 
       // Refresh
-      this.changeArea(this.currentArea)
-
-      // Hide rename tab
-      this.getNode('tab-rename').classList.toggle('hide')
-
-      this.getNode(`tab-rename-btn`).classList.remove("btn-active")
+      this.changeArea(this.currentArea);
     },
     tabDelete() {
       // delete this.pageData
 
-      const keys = Object.keys(this.pageData[this.currentArea].tabs).length
+      const keys = Object.keys(this.pageData[this.currentArea].tabs).length;
       if (keys == 1) return
 
-      delete this.pageData[this.currentArea].tabs[this.currentTab]
+      delete this.pageData[this.currentArea].tabs[this.currentTab];
 
       // Refresh
-      this.changeArea(this.currentArea)
+      this.changeArea(this.currentArea);
     },
     openTabbtn(id) {
-      this.getNode(`tab-${id}-btn`).classList.toggle("btn-active")
-      this.getNode(`tab-${id}`).classList.toggle('hide')
+      if (id==='new') {
+        this.$refs.tabnew.toggle();
+      } else if (id === 'rename') {
+        this.$refs.tabrename.toggle();
+      }
     },
     closeTabbtn(id) {
-      this.getNode(`tab-${id}-btn`).classList.remove("btn-active")
-      this.getNode(`tab-${id}`).classList.add('hide')
+      this.getNode(`tab-${id}-btn`).classList.remove("btn-active");
+      this.getNode(`tab-${id}`).classList.add('hide');
     },
+
+    saveTemplate() {
+
+      const checked = document.getElementById("saveAsTemplate").checked;
+
+      isCurrentPageTemplate = checked;
+      this.setTemplate();
+    },
+
+
+    setTemplate() {
+      const pageId = document.getElementById("input-page-id")
+      const pageName = document.getElementById("input-page-name")
+      const path = document.getElementById("input-path")
+      const parent = document.getElementById("input-parent")
+
+      if (isCurrentPageTemplate && !this.metadata.templates.includes(this.pageId)) {
+        pageId.value = "template-"
+        pageName.value = "Template: "
+        path.value = "templates/"
+        parent.value = "templates"
+      } else {
+        pageId.value = this.pageId == "add-page" ? "" : this.pageId;
+        pageName.value = this.pageId == "add-page" ? "" : this.metadata.directory[this.pageId].title;
+        path.value = this.pageId == "add-page" ? "" : this.metadata.directory[this.pageId].path.replace(`${this.pageId}.json`, "").replace(/\//g, "\\");
+        parent.value = this.pageId == "add-page" ? "" : this.metadata.directory[this.pageId].parent;
+      }
+
+    },
+
     exit() {
-      this.getNode("editor-box").classList.add("hide")
+      this.getNode("editor-box").classList.add("hide");
     },
     getNode(id) {
-      return document.getElementById(id)
+      return document.getElementById(id);
     },
     oninput(e) {
       if (e.target.value.trim() == "") {
-        e.target.classList.add("invalid")
-        return
+        e.target.classList.add("invalid");
+        return;
       }
       if (e.target.classList.contains("invalid")) {
-        e.target.classList.remove("invalid")
+        e.target.classList.remove("invalid");
       }
+    },
+
+    isLastCharSlash(inputString) {
+      // Get the last character of the string
+      var lastChar = inputString.slice(-1);
+    
+      // Check if the last character is "/"
+      return lastChar === "/";
     }
+  },
+  mounted() {
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        const editor = document.getElementById("editor-box").classList;
+        if (!editor.contains("hide")) {
+          editor.add("hide");
+        }
+      }
+  });
   },
   template: `
   <div id="editor-box" class="editor-container hide">
+
     <div id="editor" class="flex">      
-      <!-- Text Input Area -->
+
       <div class="textbox">
         <h1>Editor</h1>
         
-
+        <!-- Header input -->
         <div class="path-select flex width-100 flex-align">
-
             <div class="width-100">
               <table class="table width-100">
+                <!-- Data Input -->
                 <tr>
-                  <td><label for="input-papge-name">Name:</label></td>
+                  <td><label for="input-page-name">Name:</label></td>
                   <td><input class="input width-100" id="input-page-name" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
                   <td><label for="input-page-id">Id</label></td>
                   <td><input class="input width-100" id="input-page-id" @input="(event) => oninput(event)" v-on:blur="oninput"></td>
                 </tr>
 
                 <!-- Path selector -->
-                <tr  >
+                <tr>
                   <td class="category"><label for="input-path">Path</label>:</td>
                   <td colspan="100%">
                     <input type="text" name="editor" list="path-choices" 
@@ -270,15 +338,15 @@ const editor = {
                     <datalist id="path-choices">
                       <option :value="value" v-for="(value, index) in pathChoices">
                       </option>
-                      
                     </datalist>
                   </td>
                 </tr>
               </table>
-
-
             </div>
         </div>
+        <!-- Header Input -->
+
+
         <!-- Textarea -->
         <textarea name="background-color: white;" id="textarea"
                   placeholder="Write here..."
@@ -290,74 +358,83 @@ const editor = {
 
         <!-- Mode buttons -->
         <span class="flex">
-          <!-- <label>Mode</label> -->
-          <button class="btn btn-active" id="btn-full" @click="changeArea('full')" type="button" >Full</button>
-          <button class="btn" id="btn-preview" @click="changeArea('preview')" type="button" >Preview</button>
+          <Btn bid="btn-full" :is-active="true" name="Full" :click="() => changeArea('full')"/>
+          <Btn bid="btn-preview" name="Preview" :click="() => changeArea('preview')"/>
         </span>
 
-        <button type="button" class="btn" @click="editProfile" id="btn-profile">Edit Profile</button>
+        <Btn bid="btn-profile" name="Edit Profile"
+             :click="editProfile"/>
 
         <!-- Select Tab -->
         <div class="tab-options flex flex-c mt-15">
-          <label>Tabs</label>
           <!-- Dropdown -->
-          <select id="tab-select" @change="changeTab" v-if="currentAreaObj">
-              <option :value="name" v-for="(value, name) in currentAreaObj.tabs">
-                {{ name }}
-              </option>
-          </select>
+          <Dropdown label="Tabs"
+                    sid="tab-select"
+                    :change="changeTab"
+                    :option-list="currentAreaObj.tabs"
+                    v-if="Object.keys(currentAreaObj).length != 0"
+                    />
 
           <!-- Edit -->
           <span class="flex">
-            <button type="button" class="btn" id="tab-new-btn" @click="openTabbtn('new')">New</button>
-            <button type="button" class="btn" id="tab-rename-btn" @click="openTabbtn('rename')">Rename</button>
+            <Btn bid="tab-new-btn" name="New"
+                 :click="() => openTabbtn('new')"/>
+                 
+            <Btn bid="tab-rename-btn" name="Rename"
+                 :click="() => openTabbtn('rename')"/>
           </span>
-          <button type="button" class="btn" @click="tabDelete('delete')">Delete</button>
+          <Btn bid="tab-delete-btn" name="Delete"
+               :click="() => tabDelete('delete')"/>
+        
         </div>
+        <!-- Select Tab -->
 
+        
         <!-- Tags -->
-        <div class="flex flex-c mt-15">
-          <label>Tags</label>
-          <input type="text" id="tags-input" class="input width-100"
-                 placeholder="tagA tagB tagC">
-        </div>
-
+        <EditorInput label="Tags"
+                     iid="input-tags"
+                     placeholder="tagA tagB tagC"/>
+                     
         <!-- Parent -->
-        <div class="flex flex-c mt-15">
-          <label>Parent</label>
-          <input type="text" id="parent-input" class="input width-100"
-                 placeholder="home">
-        </div>
+        <EditorInput label="Parent"
+                     iid="input-parent"
+                     did="parent-choices"
+                     placeholder="home"
+                     :datalist="Object.keys(this.metadata.directory).sort()"/>
 
         <hr class="hr">
    
-        <!-- Tab:New -->
-        <div class="flex flex-c boxes hide" id="tab-new">
-          <label>New Tab</label>
-          <input type="text" id="tab-new-input" class="input width-100"
-                 placeholder="home">
+          <!-- Template -->
+          <Dropdown label="Templates"
+                    sid="template-select"
+                    :option-list="this.metadata.templates"
+                    :change="changeTemplate"
+                    :isArray="true"
+                    v-if="Object.keys(currentAreaObj).length != 0"/>
 
-          <div class="flex">
-            <button type="button" class="btn" @click="tabNew">Ok</button>
-            <button type="button" class="btn" @click="closeTabbtn('new')">Cancel</button>
+          <div class="checkbox">
+            <input type="checkbox" name="saveAsTemplate" id="saveAsTemplate" @change="saveTemplate">
+            <span for="saveAsTemplate">Save as Template</span>
           </div>
-        </div>       
 
+ 
+        <!-- Tab:New -->
+        <EditorInputBox ref="tabnew" 
+                        label="New Tab"
+                        iid="tab-new-input"
+                        obid="tab-new-btn"
+                        placeholder="home"
+                        :ok-handler="tabNew"/>        
 
         <!-- Tab:Rename -->
-        <div class="flex flex-c boxes hide" id="tab-rename">
-          <label>Rename Tab</label>
-          <input type="text" id="tab-rename-input" class="input width-100"
-                 placeholder="home">
-
-          <div class="flex">
-            <button type="button" class="btn" @click="tabRename">Ok</button>
-            <button type="button" class="btn" @click="closeTabbtn('rename')">Cancel</button>
-          </div>
-        </div>       
-
-
-
+        <EditorInputBox ref="tabrename" 
+                        label="Rename Tab"
+                        iid="tab-rename-input"
+                        obid="tab-rename-btn"
+                        placeholder="home"
+                        :ok-handler="tabRename"
+                       />
+        
         <div class="flex float-bottom width-100">
           <button class="btn btn-green" @click="save">Save</button>
           <button class="btn btn-red" @click="exit">Exit</button>
