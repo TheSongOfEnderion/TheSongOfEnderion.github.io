@@ -1,9 +1,9 @@
-pnpm-lock.yaml
-test.py
-test.js
-backup/
-node_modules/
-package-lock.json
+Project/pnpm-lock.yaml
+Project/test.py
+Project/test.js
+Project/backup/
+Project/node_modules/
+Project/package-lock.json
 
 build/
 dist/
@@ -11,4 +11,4 @@ include/
 Lib/
 Scripts/
 pyvenv.cfg
-build.txtw
+build.txt

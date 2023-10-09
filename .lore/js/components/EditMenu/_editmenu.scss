@@ -4,7 +4,7 @@ $editbar--bg: transparent;
 
 
 #editmode {
-  width: fit-content;
+  width: 100%;
   height: 100%;
   // display: flex;
   // flex-direction: column;
@@ -18,6 +18,8 @@ $editbar--bg: transparent;
 
 
 .btn--dark {
+  font-size: 14px;
+  width: 100%;
   &:hover {
     outline: 2px solid white;
     transform: scale(1);
@@ -29,21 +31,3 @@ $editbar--bg: transparent;
 }
 
 
-.template-list {
-  width: 100%;
-  user-select: none;
-  h2 {
-    font-size: 1.4em;
-    font-family: cambria;
-    font-weight: 100;
-    margin-bottom: 3px;
-  }
-  select {
-    padding: 10px;
-    width: 100%;
-    border: none;
-    color: white;
-    background-color: $dark;
-    @include scrollbar;
-  }
-}

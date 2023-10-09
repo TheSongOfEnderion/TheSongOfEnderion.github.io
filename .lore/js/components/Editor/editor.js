@@ -16,7 +16,7 @@ const editor = {
       currentAreaObj: {}
 
       // if new page 
-    }
+    } 
   },
   components: ['EditorTab', 'EditorInputBox', 'EditorInput', 'Btn', 'Dropdown'],
   emits: ['save-page'],
@@ -24,8 +24,8 @@ const editor = {
     metadata: { type: Object, required: true, default: {}},
     curPageId: { type: String, required: true, default: "not working fuck" },
   },
-  methods: {
-    start(value){
+  methods: { 
+    start(value){  
       // Set Variables
       this.pageId = this.curPageId;
       this.pageData = copyobj(value["areas"]);
@@ -111,7 +111,12 @@ const editor = {
     editProfile() {
       if (this.isCurrentProfile == false) {
         this.isCurrentProfile = true;
-        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`;
+        if (typeof jsyaml !== 'undefined') {
+          this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`;
+        } else {
+          this.getNode("textarea").value = `JS Yaml not loaded due to this being a web browser and not in pywebview`;
+        }
+        
         this.getNode("btn-profile").classList.add("btn-active");
       } else {
         this.isCurrentProfile = false;
@@ -176,6 +181,7 @@ const editor = {
           "title": pageName,
           "path": newPath + pageId.replace(/\ /g, "-") + ".json",
           "parent": parent,
+          "tags": tags,
         }
       }
 

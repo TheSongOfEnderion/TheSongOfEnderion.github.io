@@ -4,12 +4,12 @@
         {
             "match": "\\.js",
             "isAsync": true,
-            "cmd": "node ./.lore/js/scripts/compile.js"
+            "cmd": "node ./.lore/js/tools/compile.js"
         },
         {
           "match": "\\.scss",
           "isAsync": true,
-          "cmd": "node ./.lore/js/scripts/compile.js"
+          "cmd": "node ./.lore/js/tools/compile.js"
       },
     ]
   },

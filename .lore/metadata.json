@@ -306,10 +306,10 @@
       "title": "Euphemia Trysten",
       "path": "content/story/eotoq/characters/euphemia.json",
       "parent": "eotoq-characters",
-      "tags": ""
+      "tags": "protagonist"
     },
     "eotoq-chapter-1": {
-      "title": "Chapter 1 â€” The Ordinary Quill (1)",
+      "title": "Chapter 1 - The Ordinary Quill (1)",
       "path": "content/story/eotoq/chapters/eotoq-chapter-1.json",
       "parent": "eotoq",
       "tags": ""

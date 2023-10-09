@@ -9,6 +9,8 @@ import fs from 'fs';
 import path from 'path';
 
 
+const root = "Project/"
+
 function findFilesInDirectory(directoryPath, extension) {
   const scssFiles = [];
 

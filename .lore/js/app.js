@@ -6,6 +6,8 @@ var globalPosition = null;
 var isWebView = false;
 var isCurrentPageTemplate = false;
 
+var productionMode = false
+
 class Metadata {
   constructor(metadata) {
     this.metadata = metadata;
@@ -24,6 +26,7 @@ class Metadata {
       delete this.metadata.directory[oldKey];
     }
     this.metadata.directory[newKey] = metaEntry[newKey];
+    this.directory = this.metadata.directory
     this.updateLink(newKey);
   }
 
@@ -69,6 +72,14 @@ function start() {
       }
     },
     async mounted() {
+
+      if (isWebView == true) {
+        let script = document.createElement('script')
+        script.src = ".lore/js/import/yaml.min.js"
+        script.async = true
+        document.body.appendChild(script)
+      }
+
       // Get Metadata
       const metadata = await fetchData(".lore/metadata.json");
       this.metadata = new Metadata(metadata);
@@ -147,10 +158,12 @@ function start() {
         const side = document.getElementById("history-content")
         let sidehtml = ``
         for (let i = historyList.length - 1; i >= 0; i--) {
-          const page = historyList[i]
+          const page = historyList[i];
+          if (!this.metadata.directory.hasOwnProperty(page)) continue
           sidehtml += `<a class="button button--toc H1" onclick="changePage('${page}')">${this.metadata.directory[page].title}</a>`
         }
         side.innerHTML = sidehtml
+        
 
       },
       /**
@@ -206,11 +219,8 @@ function start() {
           this.metadata.updateTemplate(this.pageId, key)
           this.pageId = key;
         }
-
-        if (isWebView) {
+        if (isWebView == true) {
           pywebview.api.savePage(this.pageId, newPage, metaEntry, isCurrentPageTemplate);
-          
-          
         }
         this.pageId = key;
         this.reload(this.pageId, false, newPage);
@@ -249,12 +259,26 @@ function start() {
 
 }
 
+function loadYaml() {
+  let script = document.createElement('script')
+  script.src = ".lore/js/import/yaml.min.js"
+  script.async = true
+  document.body.appendChild(script)
+}
 
 
 function setup() {
   window.addEventListener('pywebviewready', () => {
     isWebView = true;
+    loadYaml();
+
   });
+
+  // Checks for reload during webview load
+  if (typeof window.pywebview !== 'undefined') {
+    isWebView = true;
+    loadYaml();
+  }
 
   console.log("Is Web view: ", isWebView)
   // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/

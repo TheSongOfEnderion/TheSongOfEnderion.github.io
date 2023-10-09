@@ -1,0 +1,11 @@
+@use '../../../css/vars' as *;
+
+.frame {
+  position: fixed;
+  width: 100vw;
+  height: 20px;
+  background-color: $blue; 
+
+  z-index: 10100000000000000000000;
+}  
+

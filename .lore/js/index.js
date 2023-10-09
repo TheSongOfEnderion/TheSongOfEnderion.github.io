@@ -7,6 +7,8 @@ var globalPosition = null;
 var isWebView = false;
 var isCurrentPageTemplate = false;
 
+var productionMode = false
+
 class Metadata {
   constructor(metadata) {
     this.metadata = metadata;
@@ -25,6 +27,7 @@ class Metadata {
       delete this.metadata.directory[oldKey];
     }
     this.metadata.directory[newKey] = metaEntry[newKey];
+    this.directory = this.metadata.directory
     this.updateLink(newKey);
   }
 
@@ -70,6 +73,14 @@ function start() {
       }
     },
     async mounted() {
+
+      if (isWebView == true) {
+        let script = document.createElement('script')
+        script.src = ".lore/js/import/yaml.min.js"
+        script.async = true
+        document.body.appendChild(script)
+      }
+
       // Get Metadata
       const metadata = await fetchData(".lore/metadata.json");
       this.metadata = new Metadata(metadata);
@@ -148,10 +159,12 @@ function start() {
         const side = document.getElementById("history-content")
         let sidehtml = ``
         for (let i = historyList.length - 1; i >= 0; i--) {
-          const page = historyList[i]
+          const page = historyList[i];
+          if (!this.metadata.directory.hasOwnProperty(page)) continue
           sidehtml += `<a class="button button--toc H1" onclick="changePage('${page}')">${this.metadata.directory[page].title}</a>`
         }
         side.innerHTML = sidehtml
+        
 
       },
       /**
@@ -207,11 +220,8 @@ function start() {
           this.metadata.updateTemplate(this.pageId, key)
           this.pageId = key;
         }
-
-        if (isWebView) {
+        if (isWebView == true) {
           pywebview.api.savePage(this.pageId, newPage, metaEntry, isCurrentPageTemplate);
-          
-          
         }
         this.pageId = key;
         this.reload(this.pageId, false, newPage);
@@ -250,12 +260,26 @@ function start() {
 
 }
 
+function loadYaml() {
+  let script = document.createElement('script')
+  script.src = ".lore/js/import/yaml.min.js"
+  script.async = true
+  document.body.appendChild(script)
+}
 
 
 function setup() {
   window.addEventListener('pywebviewready', () => {
     isWebView = true;
+    loadYaml();
+
   });
+
+  // Checks for reload during webview load
+  if (typeof window.pywebview !== 'undefined') {
+    isWebView = true;
+    loadYaml();
+  }
 
   console.log("Is Web view: ", isWebView)
   // source: https://css-tricks.com/snippets/jquery/smooth-scrolling/
@@ -285,6 +309,7 @@ function mount(app) {
     editor,
     editorinput,
     editorinputbox,
+    framehead,
     modal,
     profilebox,
     searchbox,
@@ -647,7 +672,7 @@ const card = {
     title: { type: String, default: "Ethan Morales" },
     pageId: { type: String },
     content: { type: Object },
-    directory: { type: Object, required: true },
+    directory: { type: Object, required: true, default: {}},
     toggleState: { type: Boolean }
   },
   components: ['BreadCrumbs', 'SpoilerWarning'],
@@ -697,6 +722,27 @@ const card = {
         this.toggleArea();
 
         this.$emit('processed-content', value);
+        
+
+        // Create Tags
+        if (this.directory.hasOwnProperty(this.pageId)) {
+          const tags = this.directory[this.pageId].tags.trim().split(' ')
+          if (tags[0] !== '') {
+            const tagdiv = document.getElementById("page-tags");
+            let html = ``;
+            for (let tag of tags) {
+              html += `<button class="button button--autolink" onclick="changePage('tag-${tag}')">${tag}</button>`;
+            }
+            tagdiv.innerHTML = `<br><hr>${html}`;
+  
+          } else {
+            document.getElementById("page-tags").innerHTML = ``
+          }
+        } else {
+          document.getElementById("page-tags").innerHTML = ``
+        }
+
+
       }
     },
     toggleState: {
@@ -736,7 +782,40 @@ const card = {
           continue
         }
 
+        const images = line.match(/\[\[img(.*?)\]\]/g)
+        if (images) {
+          for (const img of images) {
+            let cont = img.replace(/\[/g, '').replace(/\]/g, '').trim().split("|")
+            cont = cont.filter(item => item);
+            let imagetag = ``
+            switch(cont.length) {
+              case 5:
+                // Has url, height, width, alt
+                imagetag = `<img src="./assets/${cont[1]}" height="${cont[2]}" width="${cont[3]}" alt="${cont[4]}">`
+                break;
+              case 4:
+                // Has url, height, width
+                imagetag = `<img src="./assets/${cont[1]}" height="${cont[2]}" width="${cont[3]}" alt="${cont[1]}">`
+                break;
+              case 3:
+                // Has url, height
+                imagetag = `<img src="./assets/${cont[1]}" height="${cont[2]}" width="auto" alt="${cont[1]}">`
+                break;
+              case 2:
+                // Has url
+                imagetag = `<img src="./assets/${cont[1]}" height="auto" width="auto" alt="${cont[1]}">`
+                break;
+              case 1:
+                // Has url
+                imagetag = `<span class="error">Broken image</span>`
+                break;
+            }
 
+            console.log(imagetag)
+            line = line.replace(img, imagetag)
+          }
+          console.log(images)
+        }
         // Renders Bold
         const bold = [...line.matchAll(/\*\*(.*?)\*\*/g)];
         if (bold.length != 0) {
@@ -753,7 +832,6 @@ const card = {
           }
         }
 
-
         // Renders List
         const list = line.match(/^\* /);
         if (list) {
@@ -764,8 +842,6 @@ const card = {
         const quote = line.match(/^\> /);
         if (quote) {
           line = `<blockquote>${line.replace("> ", "").replace(' - ', '<br> - ').trim()}</blockquote>`;
-
-
         }
 
         // Add to page
@@ -870,33 +946,33 @@ const card = {
     <div class="card-container">
 
       
-      <div class="card">
+      <div class="card flex flex-c flex-between">
         
-        <SpoilerWarning :toggle-state="toggleState" :no-preview="noPreview"/>
-
-
-        <h1 id="title">
-          {{ title }} 
-        </h1>
-
-
-        <BreadCrumbs :directory="directory" :page-id="pageId" v-if="rerender"/>
-
-  
-
-        <div v-for="(area, name, index) in areas"
-             v-if="rerender"
-             :id="name + '-area'"
-             >
-          <ProfileBox :profile="area.profile" v-if="isProfileExist(name)"/>
-        
-          <div id="card-content">
-              <Tab :tabs="area.tabs"/>
+        <div>
+          <SpoilerWarning :toggle-state="toggleState" :no-preview="noPreview"/>
+          <h1 id="title">
+            {{ title }}
+          </h1>
+          <BreadCrumbs :directory="directory" :page-id="pageId" v-if="rerender"/>
+          <div v-for="(area, name, index) in areas"
+               v-if="rerender"
+               :id="name + '-area'"
+               >
+            <ProfileBox :profile="area.profile" v-if="isProfileExist(name)"/>
+          
+            <div id="card-content">
+                <Tab :tabs="area.tabs"/>
+            </div>
           </div>
         </div>
 
 
-        
+
+        <div id="page-tags">
+
+          </div>
+
+
       </div>
 
       <!-- <div>© 2021-2023 Aeiddius. All rights reserved.</div> -->
@@ -1004,18 +1080,23 @@ const editmenu = {
         elem[i].selected = false;
       }
 
+    },
+    editNav() {
+      changePage('nav')
     }
   },
   template: `
-    <div id="editmode" class="hide">
+    <div id="editmode" class="hide flex flex-c gap-10">
       <h1 class="titles">Edit Mode</h1>
 
       <div class="flex gap-10">
-      <Btn bid="editemenu-edit-page" class="btn--dark" name="Edit Page" :click="open"/>
-      <Btn bid="editemenu-add-page" class="btn--dark" name="Add Page" :click="add"/>
-      <Btn bid="editemenu-delete-page" class="btn--dark btn--red" name="Delete Page" :click="openDelete"/>   
+        <Btn bid="editemenu-edit-page" class="btn--dark" name="Edit" :click="open"/>
+        <Btn bid="editemenu-add-page" class="btn--dark" name="Add" :click="add"/>
+        <Btn bid="editemenu-delete-page" class="btn--dark btn--red" name="Delete" :click="openDelete"/>   
       </div>
-  
+
+
+      <Btn bid="editemenu-edit-nav" class="btn--dark" name="Edit Nav" :click="editNav"/>
 
       <div class="template-list">
         <h2>Templates</h2>
@@ -1047,7 +1128,7 @@ const editor = {
       currentAreaObj: {}
 
       // if new page 
-    }
+    } 
   },
   components: ['EditorTab', 'EditorInputBox', 'EditorInput', 'Btn', 'Dropdown'],
   emits: ['save-page'],
@@ -1055,8 +1136,8 @@ const editor = {
     metadata: { type: Object, required: true, default: {}},
     curPageId: { type: String, required: true, default: "not working fuck" },
   },
-  methods: {
-    start(value){
+  methods: { 
+    start(value){  
       // Set Variables
       this.pageId = this.curPageId;
       this.pageData = copyobj(value["areas"]);
@@ -1142,7 +1223,12 @@ const editor = {
     editProfile() {
       if (this.isCurrentProfile == false) {
         this.isCurrentProfile = true;
-        this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`;
+        if (typeof jsyaml !== 'undefined') {
+          this.getNode("textarea").value = `${jsyaml.dump(this.currentAreaObj.profile, 'utf8')}`;
+        } else {
+          this.getNode("textarea").value = `JS Yaml not loaded due to this being a web browser and not in pywebview`;
+        }
+        
         this.getNode("btn-profile").classList.add("btn-active");
       } else {
         this.isCurrentProfile = false;
@@ -1207,6 +1293,7 @@ const editor = {
           "title": pageName,
           "path": newPath + pageId.replace(/\ /g, "-") + ".json",
           "parent": parent,
+          "tags": tags,
         }
       }
 
@@ -1553,6 +1640,17 @@ const editorinputbox = {
   `
 }
 
+const framehead = {
+  name: "Framehead",
+  props: {},
+  template: `
+
+    <div class="frame">
+      asdasds
+    </div>
+  ` 
+}
+
 const modal = {
   name: "Modal",
   props: {},
@@ -1718,14 +1816,10 @@ const sidebar = {
     immediate: true,
     deep: true,
     async handler(value) {
-        const resp = await (fetch("assets/nav.md"))
-        if (resp.status === 404) {
-          console.log("Nav not found")
-          return
-        }
+        const resp = await fetchData("assets/nav.json")
+        const navs = resp.areas.full.tabs.default.trim().split("\n")
 
 
-        const navs = (await resp.text()).trim().split("\n")
         let lastNav = ""
         for (const nav of navs) {
           const newnav = nav.replace(/\[\]/g, "").trim()

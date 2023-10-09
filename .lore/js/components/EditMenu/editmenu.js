@@ -31,18 +31,23 @@ const editmenu = {
         elem[i].selected = false;
       }
 
+    },
+    editNav() {
+      changePage('nav')
     }
   },
   template: `
-    <div id="editmode" class="hide">
+    <div id="editmode" class="hide flex flex-c gap-10">
       <h1 class="titles">Edit Mode</h1>
 
       <div class="flex gap-10">
-      <Btn bid="editemenu-edit-page" class="btn--dark" name="Edit Page" :click="open"/>
-      <Btn bid="editemenu-add-page" class="btn--dark" name="Add Page" :click="add"/>
-      <Btn bid="editemenu-delete-page" class="btn--dark btn--red" name="Delete Page" :click="openDelete"/>   
+        <Btn bid="editemenu-edit-page" class="btn--dark" name="Edit" :click="open"/>
+        <Btn bid="editemenu-add-page" class="btn--dark" name="Add" :click="add"/>
+        <Btn bid="editemenu-delete-page" class="btn--dark btn--red" name="Delete" :click="openDelete"/>   
       </div>
-  
+
+
+      <Btn bid="editemenu-edit-nav" class="btn--dark" name="Edit Nav" :click="editNav"/>
 
       <div class="template-list">
         <h2>Templates</h2>

@@ -1,0 +1,24 @@
+@use '../../../css/vars' as *;
+
+.template-list {
+  width: 100%;
+  user-select: none;
+  h2 {
+    font-size: 18px;
+    font-family: cambria;
+    font-weight: 100;
+    margin-bottom: 3px;
+  }
+  select {
+    padding: 10px;
+    width: 100%;
+    border: none;
+    color: white;
+    background-color: $dark;
+    @include scrollbar;
+
+    option {
+      font-size: 12px;
+    }
+  }
+} 

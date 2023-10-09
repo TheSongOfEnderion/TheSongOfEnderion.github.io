@@ -1,0 +1,13 @@
+@use '../../../css/vars' as *;
+
+#page-tags {
+  hr {
+    border: 1px solid rgba($black, 10%)
+  }
+  button {
+    color: rgba($dark, 40%);
+    &:hover {
+      color: white;
+    }
+  }
+}

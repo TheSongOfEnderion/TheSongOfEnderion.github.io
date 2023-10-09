@@ -378,6 +378,7 @@ summary {
   max-width: 800px;
   padding: 30px;
   margin-left: 230px;
+  min-height: 100vh;
   color: #252525;
   font-size: 13px;
   font-family: Rubik Light;
@@ -452,6 +453,16 @@ summary {
     margin-left: 0px;
   }
 }
+#page-tags hr {
+  border: 1px solid rgba(25, 25, 25, 0.1);
+}
+#page-tags button {
+  color: rgba(37, 37, 37, 0.4);
+}
+#page-tags button:hover {
+  color: white;
+}
+
 .toc {
   display: flex;
   flex-direction: column;
@@ -490,7 +501,7 @@ summary {
   position: fixed;
   top: 120px;
   right: 50px;
-  z-index: 90000;
+  z-index: 2;
   padding: 5px;
   background-color: transparent;
 }
@@ -516,7 +527,7 @@ summary {
 .confirmbox {
   width: 100%;
   height: 100%;
-  z-index: 9999999;
+  z-index: 100;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -550,8 +561,7 @@ summary {
 }
 
 #editmode {
-  width: -moz-fit-content;
-  width: fit-content;
+  width: 100%;
   height: 100%;
 }
 #editmode h1 {
@@ -560,6 +570,10 @@ summary {
   font-weight: 100;
 }
 
+.btn--dark {
+  font-size: 14px;
+  width: 100%;
+}
 .btn--dark:hover {
   outline: 2px solid white;
   transform: scale(1);
@@ -576,7 +590,7 @@ summary {
           user-select: none;
 }
 .template-list h2 {
-  font-size: 1.4em;
+  font-size: 18px;
   font-family: cambria;
   font-weight: 100;
   margin-bottom: 3px;
@@ -597,6 +611,9 @@ summary {
 .template-list select::-webkit-scrollbar-thumb {
   background-color: #4584FF;
 }
+.template-list select option {
+  font-size: 12px;
+}
 
 .editor-container {
   position: fixed;
@@ -605,7 +622,7 @@ summary {
   display: grid;
   place-items: center;
   background-color: rgba(0, 0, 0, 0.36);
-  z-index: 999999999;
+  z-index: 50;
 }
 
 #editor {
@@ -715,6 +732,14 @@ summary {
 
 .boxes {
   border-radius: 3px;
+}
+
+.frame {
+  position: fixed;
+  width: 100vw;
+  height: 20px;
+  background-color: #4584FF;
+  z-index: 10100000000000000000000;
 }
 
 .profilebox {
@@ -845,7 +870,7 @@ summary {
   position: fixed;
   height: 100%;
   min-height: 400px;
-  z-index: 1;
+  z-index: 0;
 }
 
 #sidebarobj {

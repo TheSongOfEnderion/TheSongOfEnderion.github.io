@@ -23,14 +23,10 @@ const sidebar = {
     immediate: true,
     deep: true,
     async handler(value) {
-        const resp = await (fetch("assets/nav.md"))
-        if (resp.status === 404) {
-          console.log("Nav not found")
-          return
-        }
+        const resp = await fetchData("assets/nav.json")
+        const navs = resp.areas.full.tabs.default.trim().split("\n")
 
 
-        const navs = (await resp.text()).trim().split("\n")
         let lastNav = ""
         for (const nav of navs) {
           const newnav = nav.replace(/\[\]/g, "").trim()

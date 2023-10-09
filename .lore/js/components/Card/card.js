@@ -25,7 +25,7 @@ const card = {
     title: { type: String, default: "Ethan Morales" },
     pageId: { type: String },
     content: { type: Object },
-    directory: { type: Object, required: true },
+    directory: { type: Object, required: true, default: {}},
     toggleState: { type: Boolean }
   },
   components: ['BreadCrumbs', 'SpoilerWarning'],
@@ -75,6 +75,27 @@ const card = {
         this.toggleArea();
 
         this.$emit('processed-content', value);
+        
+
+        // Create Tags
+        if (this.directory.hasOwnProperty(this.pageId)) {
+          const tags = this.directory[this.pageId].tags.trim().split(' ')
+          if (tags[0] !== '') {
+            const tagdiv = document.getElementById("page-tags");
+            let html = ``;
+            for (let tag of tags) {
+              html += `<button class="button button--autolink" onclick="changePage('tag-${tag}')">${tag}</button>`;
+            }
+            tagdiv.innerHTML = `<br><hr>${html}`;
+  
+          } else {
+            document.getElementById("page-tags").innerHTML = ``
+          }
+        } else {
+          document.getElementById("page-tags").innerHTML = ``
+        }
+
+
       }
     },
     toggleState: {
@@ -114,7 +135,40 @@ const card = {
           continue
         }
 
+        const images = line.match(/\[\[img(.*?)\]\]/g)
+        if (images) {
+          for (const img of images) {
+            let cont = img.replace(/\[/g, '').replace(/\]/g, '').trim().split("|")
+            cont = cont.filter(item => item);
+            let imagetag = ``
+            switch(cont.length) {
+              case 5:
+                // Has url, height, width, alt
+                imagetag = `<img src="./assets/${cont[1]}" height="${cont[2]}" width="${cont[3]}" alt="${cont[4]}">`
+                break;
+              case 4:
+                // Has url, height, width
+                imagetag = `<img src="./assets/${cont[1]}" height="${cont[2]}" width="${cont[3]}" alt="${cont[1]}">`
+                break;
+              case 3:
+                // Has url, height
+                imagetag = `<img src="./assets/${cont[1]}" height="${cont[2]}" width="auto" alt="${cont[1]}">`
+                break;
+              case 2:
+                // Has url
+                imagetag = `<img src="./assets/${cont[1]}" height="auto" width="auto" alt="${cont[1]}">`
+                break;
+              case 1:
+                // Has url
+                imagetag = `<span class="error">Broken image</span>`
+                break;
+            }
 
+            console.log(imagetag)
+            line = line.replace(img, imagetag)
+          }
+          console.log(images)
+        }
         // Renders Bold
         const bold = [...line.matchAll(/\*\*(.*?)\*\*/g)];
         if (bold.length != 0) {
@@ -131,7 +185,6 @@ const card = {
           }
         }
 
-
         // Renders List
         const list = line.match(/^\* /);
         if (list) {
@@ -142,8 +195,6 @@ const card = {
         const quote = line.match(/^\> /);
         if (quote) {
           line = `<blockquote>${line.replace("> ", "").replace(' - ', '<br> - ').trim()}</blockquote>`;
-
-
         }
 
         // Add to page
@@ -248,33 +299,33 @@ const card = {
     <div class="card-container">
 
       
-      <div class="card">
+      <div class="card flex flex-c flex-between">
         
-        <SpoilerWarning :toggle-state="toggleState" :no-preview="noPreview"/>
-
-
-        <h1 id="title">
-          {{ title }} 
-        </h1>
-
-
-        <BreadCrumbs :directory="directory" :page-id="pageId" v-if="rerender"/>
-
-  
-
-        <div v-for="(area, name, index) in areas"
-             v-if="rerender"
-             :id="name + '-area'"
-             >
-          <ProfileBox :profile="area.profile" v-if="isProfileExist(name)"/>
-        
-          <div id="card-content">
-              <Tab :tabs="area.tabs"/>
+        <div>
+          <SpoilerWarning :toggle-state="toggleState" :no-preview="noPreview"/>
+          <h1 id="title">
+            {{ title }}
+          </h1>
+          <BreadCrumbs :directory="directory" :page-id="pageId" v-if="rerender"/>
+          <div v-for="(area, name, index) in areas"
+               v-if="rerender"
+               :id="name + '-area'"
+               >
+            <ProfileBox :profile="area.profile" v-if="isProfileExist(name)"/>
+          
+            <div id="card-content">
+                <Tab :tabs="area.tabs"/>
+            </div>
           </div>
         </div>
 
 
-        
+
+        <div id="page-tags">
+
+          </div>
+
+
       </div>
 
       <!-- <div>© 2021-2023 Aeiddius. All rights reserved.</div> -->
