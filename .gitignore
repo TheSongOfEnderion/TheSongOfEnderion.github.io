@@ -1,0 +1,14 @@
+pnpm-lock.yaml
+test.py
+test.js
+backup/
+node_modules/
+package-lock.json
+
+build/
+dist/
+include/
+Lib/
+Scripts/
+pyvenv.cfg
+build.txtw
