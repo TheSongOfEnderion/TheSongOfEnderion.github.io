@@ -47,7 +47,7 @@ const editor = {
 
 
       // Create parent choices
-      if (!this.metadata.directory.hasOwnProperty(this.pageId) || this.pageId === "404") {
+      if (this.pageId !== 'add-page' && !this.metadata.directory.hasOwnProperty(this.pageId) || this.pageId === "404") {
         document.getElementById("input-page-name").value = this.pageId;
         document.getElementById("input-page-id").value = this.pageId;
         document.getElementById("input-path").value = "";
@@ -146,6 +146,11 @@ const editor = {
       // Validation
       if (pageName === "" || pageId === "" || path === ""){
         console.log("pageName|pageId|path are required");
+        return;
+      }
+
+      if (pageId === `add-page`) {
+        console.log("cannot use add-page")
         return;
       }
 

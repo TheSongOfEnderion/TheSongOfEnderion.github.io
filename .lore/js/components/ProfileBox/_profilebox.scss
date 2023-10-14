@@ -65,13 +65,20 @@ $profile--width: 250px;
     padding-left: 12px;
   }
 
+  table {
+    min-width: 100% !important; 
+    tbody {
+      min-width: 100% !important;
+    }
+  }
+
   td {
     padding: 0px;
   }
-
+ 
   .category--name {
-    // Block
-    width: 100%;
+    // Block 
+
     border-radius: 5px;
 
     // Element

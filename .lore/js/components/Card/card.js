@@ -177,6 +177,14 @@ const card = {
           }
         }
 
+        // Renders Bold
+        // const quoteSingle = [...line.matchAll(/\'(.*?)\'/g)];
+        // if (quoteSingle.length != 0) {
+        //   for (const b of quoteSingle) {
+        //     line = line.replace(b[0], `<span class='error'>${b[1]}</span>`);
+        //   }
+        // }
+
         // Renders italic
         const italic = [...line.matchAll(/\*(.*?)\*/g)];
         if (italic.length != 0) {

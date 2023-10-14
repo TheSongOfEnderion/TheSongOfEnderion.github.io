@@ -41,7 +41,7 @@
     "tboah": {
       "title": "The Birth of a Hero",
       "path": "content/story/tboah/tboah.json",
-      "parent": "",
+      "parent": "story",
       "tags": ""
     },
     "tboah-characters": {
@@ -345,7 +345,7 @@
       "tags": ""
     },
     "tboah-settings": {
-      "title": "Settings (tboah)",
+      "title": "Settings",
       "path": "content/story/tboah/tboah-settings.json",
       "parent": "tboah",
       "tags": ""
@@ -389,12 +389,6 @@
     "ethan-morales": {
       "title": "Ethan Morales",
       "path": "content/story/tboah/characters/protagonist/ethan-morales.json",
-      "parent": "tboah-characters",
-      "tags": ""
-    },
-    "akiyoshi-althaus": {
-      "title": "Akiyoshi Althaus",
-      "path": "content/story/tboah/characters/a-class//akiyoshi-althaus.json",
       "parent": "tboah-characters",
       "tags": ""
     },
@@ -463,9 +457,102 @@
       "path": "content/story/tie/the-white-troupe.json",
       "parent": "tie",
       "tags": ""
+    },
+    "psion": {
+      "title": "Psion",
+      "path": "content/story/tboah/terms/psion.json",
+      "parent": "",
+      "tags": ""
+    },
+    "bandage-arms": {
+      "title": "Bandage Arms",
+      "path": "content/lore/powers/psions/bandage-arms.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "akiyoshi-althaus": {
+      "title": "Akiyoshi Althaus",
+      "path": "content/story/tboah/characters/a-class/akiyoshi-althaus.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "template-charpreview": {
+      "title": "Template: charpreview",
+      "path": "templates/template-charpreview.json",
+      "parent": "templates",
+      "tags": ""
+    },
+    "mera": {
+      "title": "Mera",
+      "path": "content/story/tboah/characters/underworld/mera.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "amjed": {
+      "title": "Amjed bin Aasim",
+      "path": "content/story/tboah/characters/dim-grail/amjed.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "madelyn-morales": {
+      "title": "Madelyn Morales",
+      "path": "content/story/tboah/characters/side-character/madelyn-morales.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "torch-of-sunder": {
+      "title": "Torch of Sunder",
+      "path": "content/story/tboah/terms/torch-of-sunder.json",
+      "parent": "tboah-items",
+      "tags": ""
+    },
+    "tboah-items": {
+      "title": "Items",
+      "path": "content/story/tboah/tboah-items.json",
+      "parent": "tboah",
+      "tags": ""
+    },
+    "chapter-1": {
+      "title": "Chapter 1",
+      "path": "content/story/tboah/chapters/chapter-1.json",
+      "parent": "tboah-chapters",
+      "tags": ""
+    },
+    "tboah-chapters": {
+      "title": "Chapters",
+      "path": "content/story/tboah/tboah-chapters.json",
+      "parent": "tboah",
+      "tags": ""
+    },
+    "agnis-kraus": {
+      "title": "Agnis Kraus",
+      "path": "content/story/tboah/characters/uha/agnis-kraus.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "fanaticism": {
+      "title": "Fanaticism",
+      "path": "content/story/tboah/terms/fanaticism.json",
+      "parent": "",
+      "tags": ""
+    },
+    "uha": {
+      "title": "United Heroes' Academy",
+      "path": "content/story/tboah/settings/uha.json",
+      "parent": "tboah-settings",
+      "tags": ""
+    },
+    "vanessa-baudelaire": {
+      "title": "Vanessa Baudelaire",
+      "path": "tboah/characters/civilians/vanessa-baudelaire.json",
+      "parent": "tboah-characters",
+      "tags": ""
     }
   },
   "templates": [
-    "template-character"
+    "template-character",
+    "template-charpreview",
+    "template-character",
+    "template-charpreview"
   ]
 }

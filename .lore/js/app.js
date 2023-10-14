@@ -174,10 +174,13 @@ function start() {
 
         const side = document.getElementById("history-content")
         let sidehtml = ``
+        let prev = ''
         for (let i = historyList.length - 1; i >= 0; i--) {
           const page = historyList[i];
+          if (page === prev) continue;
           if (!this.metadata.directory.hasOwnProperty(page)) continue
           sidehtml += `<a class="button button--toc H1" onclick="changePage('${page}')">${this.metadata.directory[page].title}</a>`
+          prev = page;
         }
         side.innerHTML = sidehtml
         

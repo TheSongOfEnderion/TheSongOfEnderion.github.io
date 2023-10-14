@@ -175,10 +175,13 @@ function start() {
 
         const side = document.getElementById("history-content")
         let sidehtml = ``
+        let prev = ''
         for (let i = historyList.length - 1; i >= 0; i--) {
           const page = historyList[i];
+          if (page === prev) continue;
           if (!this.metadata.directory.hasOwnProperty(page)) continue
           sidehtml += `<a class="button button--toc H1" onclick="changePage('${page}')">${this.metadata.directory[page].title}</a>`
+          prev = page;
         }
         side.innerHTML = sidehtml
         
@@ -841,6 +844,14 @@ const card = {
           }
         }
 
+        // Renders Bold
+        // const quoteSingle = [...line.matchAll(/\'(.*?)\'/g)];
+        // if (quoteSingle.length != 0) {
+        //   for (const b of quoteSingle) {
+        //     line = line.replace(b[0], `<span class='error'>${b[1]}</span>`);
+        //   }
+        // }
+
         // Renders italic
         const italic = [...line.matchAll(/\*(.*?)\*/g)];
         if (italic.length != 0) {
@@ -1181,7 +1192,7 @@ const editor = {
 
 
       // Create parent choices
-      if (!this.metadata.directory.hasOwnProperty(this.pageId) || this.pageId === "404") {
+      if (this.pageId !== 'add-page' && !this.metadata.directory.hasOwnProperty(this.pageId) || this.pageId === "404") {
         document.getElementById("input-page-name").value = this.pageId;
         document.getElementById("input-page-id").value = this.pageId;
         document.getElementById("input-path").value = "";
@@ -1280,6 +1291,11 @@ const editor = {
       // Validation
       if (pageName === "" || pageId === "" || path === ""){
         console.log("pageName|pageId|path are required");
+        return;
+      }
+
+      if (pageId === `add-page`) {
+        console.log("cannot use add-page")
         return;
       }
 
