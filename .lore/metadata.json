@@ -251,12 +251,6 @@
     "ancient-heroes": {
       "title": "Ancient Heroes",
       "path": "content/librarium/history/ancient-heroes.json",
-      "parent": "history",
-      "tags": ""
-    },
-    "history": {
-      "title": "History",
-      "path": "content/librarium/history.json",
       "parent": "librarium",
       "tags": ""
     },
@@ -546,6 +540,102 @@
       "title": "Vanessa Baudelaire",
       "path": "tboah/characters/civilians/vanessa-baudelaire.json",
       "parent": "tboah-characters",
+      "tags": ""
+    },
+    "a-class": {
+      "title": "A class",
+      "path": "content/story/tboah/settings/uha/a-class.json",
+      "parent": "tboah-settings",
+      "tags": ""
+    },
+    "aiuetruzexr": {
+      "title": "Aiuetruzexr",
+      "path": "content/story/tboah/characters/uha/aiuetruzexr.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "senator-jacinto": {
+      "title": "Senator Jacinto",
+      "path": "content/story/tboah/characters/villains/senator-jacinto.json",
+      "parent": "tboah-characters",
+      "tags": ""
+    },
+    "sea-satyr": {
+      "title": "Sea Satyr",
+      "path": "content/lore/races/mirdum/sea-satyr.json",
+      "parent": "races",
+      "tags": ""
+    },
+    "kyrea": {
+      "title": "Kyrea",
+      "path": "content/lore/beings/kyrea.json",
+      "parent": "beings",
+      "tags": ""
+    },
+    "history": {
+      "title": "History",
+      "path": "content/lore/history.json",
+      "parent": "lore",
+      "tags": ""
+    },
+    "forsaken-ash": {
+      "title": "Forsaken Ash",
+      "path": "content/lore/beings/forsaken-ash.json",
+      "parent": "beings",
+      "tags": ""
+    },
+    "irregular-entity": {
+      "title": "Irregular Entity",
+      "path": "content/lore/beings/irregular-entity.json",
+      "parent": "beings",
+      "tags": ""
+    },
+    "artoria": {
+      "title": "Artoria",
+      "path": "content/lore/legendary-beings/artoria.json",
+      "parent": "Legendary Beings",
+      "tags": ""
+    },
+    "legendary-beings": {
+      "title": "Legendary Beings",
+      "path": "content/lore/legendary-beings.json",
+      "parent": "lore",
+      "tags": ""
+    },
+    "eternal-era": {
+      "title": "Eternal Era",
+      "path": "content/lore/history/eternal-era.json",
+      "parent": "history",
+      "tags": ""
+    },
+    "gods": {
+      "title": "Gods",
+      "path": "content/lore/gods.json",
+      "parent": "geh",
+      "tags": ""
+    },
+    "white-god": {
+      "title": "White God",
+      "path": "content/librarium/myths and religions/white-god.json",
+      "parent": "",
+      "tags": ""
+    },
+    "the-god-of-white": {
+      "title": "The God of White",
+      "path": "content/librarium/myths and religions/the-god-of-white.json",
+      "parent": "librarium",
+      "tags": ""
+    },
+    "light-satyr": {
+      "title": "Light Satyr",
+      "path": "content/lore/races/mirdum/light-satyr.json",
+      "parent": "races",
+      "tags": ""
+    },
+    "dark-satyr": {
+      "title": "Dark Satyr",
+      "path": "content/lore/races/mirdum/dark-satyr.json",
+      "parent": "races",
       "tags": ""
     }
   },
